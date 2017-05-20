@@ -1,7 +1,7 @@
 'use strict';
 
-const VERSION = '2.0.0';
-const ECHO_SERVER_URL = 'ws://echo.websocket.org/';
+const VERSION = '2.0.1';
+const ECHO_SERVER_URL = 'wss://echo.websocket.org/';
 const bins = new Map();
 const texts = new Map();
 let connection = null;
@@ -822,10 +822,20 @@ class Splash {
       if (historyLength < 1) {
         return [];
       }
+      const forgetAdvertisement = [
+        'Type ',
+        {
+          type: 'strong',
+          text: '/forget everything',
+        },
+        ' to remove all stored history',
+      ];
       if (connectCommands.length < 1) {
         return [
           '',
           historySummary.concat(['.']),
+          '',
+          forgetAdvertisement,
         ];
       }
       return [
@@ -841,14 +851,7 @@ class Splash {
         ]),
       ].concat(connectionsLines).concat(tooManyWarning).concat([
         '',
-        [
-          'Type ',
-          {
-            type: 'strong',
-            text: '/forget everything',
-          },
-          ' to remove all stored history',
-        ],
+        forgetAdvertisement,
       ]);
     })();
     const about = [
@@ -878,7 +881,7 @@ class Splash {
       ],
     ];
     const maybeBeginnerInfo = (() => {
-      if (historyLength < 1) {
+      if (connectCommands.length < 1) {
         return beginnerInfo;
       }
       return [];
@@ -1095,6 +1098,7 @@ class Connect {
 
   examples() {
     return [
+      '/connect wss://echo.websocket.org/',
       '/connect ws://echo.websocket.org/',
       '/connect ws://127.0.0.1:1234/ p1.example.com,p2.example.com',
     ];
@@ -1722,9 +1726,9 @@ class HistoryManager {
   }
 }
 
-function globalKeyPress() {
+function globalKeyPress(event) {
   const msg1 = document.getElementById('msg1');
-  if (event.keyIdentifier === 'U+001B') {
+  if (event.key === 'Escape') {
     if (connection !== null && (connection.isOpen() || connection.isConnecting())) {
       loud('/disconnect');
     } else if (msg1.value === '') {
@@ -1741,7 +1745,7 @@ function globalKeyPress() {
   }
 }
 
-function msgKeyPress() {
+function msgKeyPress(event) {
   const msg1 = document.getElementById('msg1');
   if (event.keyCode === 13) {
     send();
