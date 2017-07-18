@@ -6,10 +6,16 @@
 body
 {
   font-family: monospace;
-  font-size: 10pt;
+  font-size: 3.9vw;
   height: 100%;
-  background-color: #000;
+  background-color: #030303;
 }
+@media only screen and (min-width: 500px) {
+  body {
+    font-size: 10pt;
+  }
+}
+
 .button
 {
   width: auto;
@@ -87,10 +93,17 @@ body
   width: 100%;
   height: 24pt;
 }
+.dwst-mlog__help-link-wrapper {
+  white-space: nowrap;
+}
 .dwst-mlog__help-link {
   color: #888;
   font-style: italic;
   text-decoration: none;
+}
+.dwst-mlog__help-link--spacing {
+  display: inline-block;
+  padding-bottom: 1ch;
 }
 .dwst-mlog__help-link:hover {
   color: #ff0;
@@ -105,6 +118,7 @@ body
   text-decoration: none;
 }
 .dwst-mlog__hexline {
+  display: inline-block;
   color: #888;
 }
 .dwst-mlog__strong {
@@ -159,14 +173,51 @@ body
   background: #201;
 }
 
-.background {
+.dwst-background {
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 24pt;
-  background-color: #030303;
-  width: 100ch;
+  width: 42ch;
+  max-width: 100%;
+}
+@media only screen and (min-width: 600px) {
+  .dwst-background {
+    width: 74ch;
+  }
+}
+@media screen and (min-width: 750px) {
+  .dwst-background {
+    width: 110ch;
+  }
+}
+.dwst-debug .dwst-background {
+  background-color: #431303;
+}
+
+
+.dwst-background__content-area {
+  position: absolute;
+  top: 0;
+  left: 2ch;
+  right: 0;
+  bottom: 0;
+  width: 38ch;
+  max-width: 100%;
+}
+@media only screen and (min-width: 600px) {
+  .dwst-background__content-area {
+    width: 70ch;
+  }
+}
+@media screen and (min-width: 750px) {
+  .dwst-background__content-area {
+    left: 20ch;
+  }
+}
+.dwst-debug .dwst-background__content-area {
+  background-color: #131303;
 }
 
 #screen1
@@ -176,7 +227,7 @@ body
   left: 0;
   right: 0;
   bottom: 24pt;
-  overflow: auto;
+  overflow: hidden;
   overflow-y: scroll;
   vertical-align: top;
   -webkit-user-select: text;
@@ -197,19 +248,41 @@ body
 
 
 .dwst-logline {
-  padding: 0 1ch 0 0;
+  padding: 0 0 0 1ch;
+  display: grid;
+  grid-template-columns: 1ch calc(100% - 2ch);
+  grid-column-gap: 1ch;
 }
 
 .dwst-logline__item {
-  display: table-cell;
-  padding: 0 0 0 1ch;
   vertical-align: top;
+}
+.dwst-logline__item--main {
+  word-wrap: break-word;
+  hyphens: none;
+}
+
+
+@media screen and (min-width: 750px) {
+
+  .dwst-logline {
+    grid-template-columns: 8ch 10ch calc(100% - 8ch - 10ch - 2 * 1ch);
+  }
+
+}
+
+.dwst-logline__item.time {
+  display: none;
+}
+@media screen and (min-width: 750px) {
+  .dwst-logline__item.time {
+    display: initial;
+  }
 }
 
 .dwst-direction {
- box-sizing: content-box;
- width: 9ch; /* len('received:') */
- text-align: right;
+  overflow: hidden;
+  text-align: right;
 }
 
 .dwst-direction--sent
@@ -242,9 +315,12 @@ body
   color: #7f7;
 }
 
-.dwst-gfx {
+.dwst-gfx__content {
   overflow: hidden;
-  max-width: 100ch;
+  max-width: 110ch;
+  display: inline-block;
+  margin-left: 50%;
+  transform: translateX(-50%);
 }
 .dwst-gfx__line {
   margin: 0 auto;
@@ -257,4 +333,59 @@ body
 }
 .dwst-gfx__element--color-2 {
   color: #614;
+}
+
+
+.dwst-bytegrid {
+  font-family: monospace;
+  display: grid;
+  grid-template-columns: 13ch 13ch 5ch 5ch;
+}
+.dwst-bytegrid_item {
+  white-space: nowrap;
+}
+.dwst-bytegrid_item:nth-child(3) {
+  grid-column: 2;
+  grid-row: 1;
+}
+.dwst-bytegrid_item:nth-child(7) {
+  grid-column: 2;
+  grid-row: 2;
+}
+.dwst-bytegrid_item:nth-child(2):before {
+  content: '|';
+}
+.dwst-bytegrid_item:nth-child(4):after {
+  content: '|';
+}
+.dwst-bytegrid_item:nth-child(6):before {
+  content: '|';
+}
+.dwst-bytegrid_item:nth-child(8):after {
+  content: '|';
+}
+
+@media only screen and (min-width: 600px) {
+  .dwst-bytegrid {
+    grid-template-columns: 12ch 13ch 12ch 13ch 5ch 4ch 4ch 5ch;
+  }
+  .dwst-bytegrid_item:nth-child(5) {
+    grid-column: 3;
+    grid-row: 1;
+  }
+  .dwst-bytegrid_item:nth-child(7) {
+    grid-column: 4;
+    grid-row: 1;
+  }
+  .dwst-bytegrid_item:nth-child(4):after {
+    content: '';
+  }
+  .dwst-bytegrid_item:nth-child(6):before {
+    content: '';
+  }
+}
+
+.dwst-gfx {
+  max-width: 110ch;
+  overflow: hidden;
 }

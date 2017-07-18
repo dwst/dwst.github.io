@@ -1,9 +1,10 @@
 'use strict';
 
-const VERSION = '2.0.1';
+const VERSION = '2.1.0';
 const ECHO_SERVER_URL = 'wss://echo.websocket.org/';
 const bins = new Map();
 const texts = new Map();
+let resizePending = false;
 let connection = null;
 let intervalId = null;
 let historyManager;
@@ -732,70 +733,70 @@ class Splash {
 
     const SPLASH = [
       [
-        // ".        ..        ..        ..        ..        ..        ..        ..        ..        ..        .",
-        "                                                                                                    ",
-        "                                                                                                    ",
-        "                                                                                                    ",
-        "                                                                                                    ",
-        "                              `ggg.                                                                 ",
-        "                                ggg                                                                 ",
-        "                                 gg.                                                                ",
-        "                                  gg                                 ggg'                           ",
-        "                                  gg                                 gg                             ",
-        "                              ,ggg g.  ggg       ggg.   .gggggg.     g                              ",
-        "                            ,gg  `ggg ggg         ggg. gg      `g.  gg                              ",
-        "                            gg     gg.g'           `gg gg.       `gggggg'                           ",
-        "                            gg     ggg'             gg. 'gggggg.  ,g                                ",
-        "                            ll.     ll.     ,l.      ll       `ll l.                                ",
-        "                             ll.   llll.   ,lll.   ,ll l`     ,ll ll.                               ",
-        "                              `lllll' `lllll' `lllll'  `lllllll'   lll.                             ",
-        "                                                                                                    ",
-        "                                                                                                    ",
-        "                                                                                                    ",
+        // ".        ..        ..        ..        ..        ..        ..        ..        ..        ..        ..        .",
+        "                                                                                                              ",
+        "                                                                                                              ",
+        "                                                                                                              ",
+        "                                                                                                              ",
+        "                                   `ggg.                                                                      ",
+        "                                     ggg                                                                      ",
+        "                                      gg.                                                                     ",
+        "                                       gg                                 ggg'                                ",
+        "                                       gg                                 gg                                  ",
+        "                                   ,ggg g.  ggg       ggg.   .gggggg.     g                                   ",
+        "                                 ,gg  `ggg ggg         ggg. gg      `g.  gg                                   ",
+        "                                 gg     gg.g'           `gg gg.       `gggggg'                                ",
+        "                                 gg     ggg'             gg. 'gggggg.  ,g                                     ",
+        "                                 ll.     ll.     ,l.      ll       `ll l.                                     ",
+        "                                  ll.   llll.   ,lll.   ,ll l`     ,ll ll.                                    ",
+        "                                   `lllll' `lllll' `lllll'  `lllllll'   lll.                                  ",
+        "                                                                                                              ",
+        "                                                                                                              ",
+        "                                                                                                              ",
       ],
       [
-        "                                                                                                    ",
-        "                                                                                                    ",
-        "                                                                                                    ",
-        "                                                                                                    ",
-        "                              11111                                                                 ",
-        "                                111                                                                 ",
-        "                                 111                                                                ",
-        "                                  11                                 1111                           ",
-        "                                  11                                 11                             ",
-        "                              1111 11  111       1111   11111111     1                              ",
-        "                            111  1111 111         1111 11      111  11                              ",
-        "                            11     11111           111 111       11111111                           ",
-        "                            11     1111             111 11111111  11                                ",
-        "                            222     222     222      22       222 22                                ",
-        "                             222   22222   22222   222 22     222 222                               ",
-        "                              2222222 2222222 2222222  222222222   2222                             ",
-        "                                                                                                    ",
-        "                                                                                                    ",
-        "                                                                                                    ",
+        "                                                                                                              ",
+        "                                                                                                              ",
+        "                                                                                                              ",
+        "                                                                                                              ",
+        "                                   11111                                                                      ",
+        "                                     111                                                                      ",
+        "                                      111                                                                     ",
+        "                                       11                                 1111                                ",
+        "                                       11                                 11                                  ",
+        "                                   1111 11  111       1111   11111111     1                                   ",
+        "                                 111  1111 111         1111 11      111  11                                   ",
+        "                                 11     11111           111 111       11111111                                ",
+        "                                 11     1111             111 11111111  11                                     ",
+        "                                 222     222     222      22       222 22                                     ",
+        "                                  222   22222   22222   222 22     222 222                                    ",
+        "                                   2222222 2222222 2222222  222222222   2222                                  ",
+        "                                                                                                              ",
+        "                                                                                                              ",
+        "                                                                                                              ",
       ],
     ];
     /*
     const xmasColors = [
-      "                                                                                                    ",
-      "                                                                                                    ",
-      "                                                                                                    ",
-      "                                                                                                    ",
-      "                               xxxx                                                                 ",
-      "                                111                                                                 ",
-      "                                 11x                                                                ",
-      "                                  11                                 xxxx                           ",
-      "                                  11                                 11                             ",
-      "                              xxx1 11  xxx       xxxx   xxxxxxxx     1                              ",
-      "                            xx1  1111 111         111x x1      1xx  x1                              ",
-      "                            11     11111           111 111       1xx11111                           ",
-      "                            11     1111             11x 11111111  11                                ",
-      "                            222     222     222      22       222 22                                ",
-      "                             222   22222   22222   222 22     222 222                               ",
-      "                              2222222 2222222 2222222  222222222   2222                             ",
-      "                                                                                                    ",
-      "                                                                                                    ",
-      "                                                                                                    ",
+      "                                                                                                              ",
+      "                                                                                                              ",
+      "                                                                                                              ",
+      "                                                                                                              ",
+      "                                    xxxx                                                                      ",
+      "                                     111                                                                      ",
+      "                                      11x                                                                     ",
+      "                                       11                                 xxxx                                ",
+      "                                       11                                 11                                  ",
+      "                                   xxx1 11  xxx       xxxx   xxxxxxxx     1                                   ",
+      "                                 xx1  1111 111         111x x1      1xx  x1                                   ",
+      "                                 11     11111           111 111       1xx11111                                ",
+      "                                 11     1111             11x 11111111  11                                     ",
+      "                                 222     222     222      22       222 22                                     ",
+      "                                  222   22222   22222   222 22     222 222                                    ",
+      "                                   2222222 2222222 2222222  222222222   2222                                  ",
+      "                                                                                                              ",
+      "                                                                                                              ",
+      "                                                                                                              ",
     ];
     */
 
@@ -1039,29 +1040,20 @@ class Help {
       return;
     }
     const available = [];
-    [...commands.entries()].forEach(([c, plugin]) => {
+    [...commands.keys()].sort().forEach(c => {
       if (c.length > 1) {
-        const ndash = {
-          type: 'regular',
-          text: '&ndash;',
-          unsafe: true,
-        };
-        let info = '  ';
-        if (typeof plugin.info !== 'undefined') {
-          info += plugin.info();
-        }
-        const cpad = Array(15 - c.length).join(' ');
         const commandSegment = {
           type: 'dwstgg',
           text: c,
           section: c,
+          spacing: true,
         };
-        available.push([commandSegment, cpad, ndash, info]);
+        available.push(commandSegment);
       }
     });
     available.sort();
 
-    const commandsList = formatList('Commands', available);
+    const commandsList = [flatList('Commands', available)];
 
     mlog([
       {
@@ -1312,8 +1304,14 @@ function mlog(lines, type) {
           return textSpan;
         }
         if (segment.type === 'dwstgg') {
+          const linkWrapper = document.createElement('span');
+          linkWrapper.setAttribute('class', 'dwst-mlog__help-link-wrapper');
           const link = document.createElement('a');
-          link.setAttribute('class', 'dwst-mlog__help-link');
+          const classes = ['dwst-mlog__help-link'];
+          if (segment.spacing === true) {
+            classes.push('dwst-mlog__help-link--spacing');
+          }
+          link.setAttribute('class', classes.join(' '));
           const command = (() => {
             if (segment.hasOwnProperty('section')) {
               return `/help ${segment.section}`;
@@ -1328,7 +1326,12 @@ function mlog(lines, type) {
           const textSpan = document.createElement('span');
           textSpan.innerHTML = safeText;
           link.appendChild(textSpan);
-          return link;
+          linkWrapper.appendChild(link);
+          if (segment.hasOwnProperty('afterText')) {
+            const afterTextNode = document.createTextNode(segment.afterText);
+            linkWrapper.appendChild(afterTextNode);
+          }
+          return linkWrapper;
         }
         if (segment.type === 'command') {
           const link = document.createElement('a');
@@ -1346,9 +1349,31 @@ function mlog(lines, type) {
           return link;
         }
         if (segment.type === 'hexline') {
+          const hexChunks = divissimo(segment.hexes, 4);
+          const textChunks = divissimo(rawText, 4);
+
+          const byteGrid = document.createElement('div');
+          byteGrid.setAttribute('class', 'dwst-bytegrid');
+
+          hexChunks.forEach((hexChunk, i) => {
+            const textChunk = textChunks[i];
+
+            const hexContent = htmlescape(hexChunk.join(' '));
+            const hexItem = document.createElement('div');
+            hexItem.setAttribute('class', 'dwst-bytegrid_item');
+            hexItem.innerHTML = hexContent;
+            byteGrid.appendChild(hexItem);
+
+            const textContent = htmlescape(textChunk.join(''));
+            const textItem = document.createElement('div');
+            textItem.setAttribute('class', 'dwst-bytegrid_item');
+            textItem.innerHTML = textContent;
+            byteGrid.appendChild(textItem);
+          });
+
           const textSpan = document.createElement('span');
           textSpan.setAttribute('class', 'dwst-mlog__hexline');
-          textSpan.innerHTML = safeText;
+          textSpan.appendChild(byteGrid);
           return textSpan;
         }
         if (segment.type === 'strong') {
@@ -1390,8 +1415,8 @@ function mlog(lines, type) {
 
 function gfx(lines, colors) {
 
-  const gfxContainer = document.createElement('div');
-  gfxContainer.setAttribute('class', 'dwst-gfx');
+  const gfxContent = document.createElement('div');
+  gfxContent.setAttribute('class', 'dwst-gfx__content');
   lines.forEach((line, li) => {
     const logLine = document.createElement('div');
     logLine.setAttribute('class', 'dwst-gfx__line');
@@ -1402,13 +1427,19 @@ function gfx(lines, colors) {
       outputCell.innerHTML = chr;
       logLine.appendChild(outputCell);
     });
-    gfxContainer.appendChild(logLine);
+    gfxContent.appendChild(logLine);
   });
+
+  const gfxContainer = document.createElement('div');
+  gfxContainer.setAttribute('class', 'dwst-gfx');
+  gfxContainer.appendChild(gfxContent);
 
   const terminal1 = document.getElementById('ter1');
   terminal1.appendChild(gfxContainer);
   const screen = document.getElementById('screen1');
   screen.scrollTop = screen.scrollHeight;
+
+  updateGfxPositions();
 }
 
 function divissimo(l, n) {
@@ -1446,25 +1477,22 @@ function hexdump(buffer) {
   let offset = 0;
   const lines = [];
   while (offset < buffer.byteLength) {
-    let chars = '';
-    let hexes = '';
+    let text = '';
+    const hexes = [];
     for (let i = 0; i < 16; i++) {
       if (offset < buffer.byteLength) {
-        const byte = dv.getUint8(offset);
-        chars += charify(byte);
-        hexes += hexify(byte);
-      } else {
-        chars += ' ';
-        hexes += '  ';
-      }
-      hexes += ' ';
-      if (i === 7) {
-        hexes += ' ';
+        const oneByte = dv.getUint8(offset);
+        const asChar = charify(oneByte);
+        const asHex = hexify(oneByte);
+        text += asChar;
+        hexes.push(asHex);
       }
       offset += 1;
     }
-    const line = `${hexes}  |${chars}|`;
-    lines.push(line);
+    lines.push({
+      text,
+      hexes,
+    });
 
   }
   return lines;
@@ -1487,13 +1515,30 @@ function formatList(listTitle, lines) {
   });
 }
 
+function flatList(listTitle, values) {
+  const segments = [];
+  segments.push(listTitle);
+  segments.push(': ');
+  values.forEach(value => {
+    value.afterText = ',';
+    segments.push(value);
+    segments.push(' ');
+  });
+  segments.pop();  // remove extra space
+  const last = segments.pop();
+  Reflect.deleteProperty(last, 'afterText');
+  segments.push(last);
+  return segments;
+}
+
 function blog(buffer, type) {
   const msg = `<${buffer.byteLength}B of binary data>`;
   const hd = hexdump(buffer);
   const hexLines = hd.map(line => {
     return {
       type: 'hexline',
-      text: line,
+      text: line.text,
+      hexes: line.hexes,
     };
   }
   );
@@ -1513,6 +1558,11 @@ function loud(line) {
 
 function send() {
   const raw = document.getElementById('msg1').value;
+  if (raw === '/idkfa') {
+    // dwst debugger
+    document.documentElement.className += ' dwst-debug';
+    return;
+  }
   historyManager.select(raw);
   document.getElementById('msg1').value = '';
   if (raw.length < 1) {
@@ -1772,12 +1822,47 @@ function loadSaves() {
   historyManager = new HistoryManager(history, {save});
 }
 
+function updateGfxPositions() {
+  // Updating gfx positions with this method disables basic centering
+  // and aligns the text in the gfx section with the text in log lines.
+  const MAX_MAXCHARS = 110;
+  Reflect.apply(Array.prototype.forEach, document.getElementsByClassName('dwst-gfx'), [maxDiv => {
+    const ref = maxDiv.getElementsByClassName('dwst-gfx__line')[0];
+    const refTextWidth = ref.offsetWidth;
+    const refTextLength = ref.textContent.length;
+    const refWidth = refTextWidth / refTextLength;
+    const windowWidth = window.innerWidth;
+    const maxFit = Math.floor(windowWidth / refWidth);
+    let leftMargin = 0;
+    if (maxFit < MAX_MAXCHARS) {
+      const invisible = MAX_MAXCHARS - maxFit;
+      const invisibleLeft = Math.floor(invisible / 2);
+      leftMargin -= invisibleLeft;
+    }
+    const field = maxDiv.getElementsByClassName('dwst-gfx__content')[0];
+    field.setAttribute('style', `transform: initial; margin-left: ${leftMargin}ch;`);
+  }]);
+}
+
+function throttledUpdateGfxPositions() {
+  if (resizePending !== true) {
+    resizePending = true;
+    setTimeout(() => {
+      resizePending = false;
+      updateGfxPositions();
+    }, 100);
+  }
+}
+
+
 function init() {
   loadSaves();
   refreshclock();
   document.getElementById('clock1').removeAttribute('style');
   setInterval(refreshclock, 500);
   silent('/splash');
+
+  window.addEventListener('resize', throttledUpdateGfxPositions);
 
   document.addEventListener('keydown', globalKeyPress);
   document.getElementById('msg1').addEventListener('keydown', msgKeyPress);
@@ -1786,6 +1871,7 @@ function init() {
     loud('/splash');
   });
   document.getElementById('msg1').focus();
+
 }
 
 document.addEventListener('DOMContentLoaded', init);
