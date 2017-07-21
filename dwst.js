@@ -13,7 +13,7 @@ William Orr <will@worrbase.com>, US 2012
 
 */
 
-const VERSION = '2.2.1';
+const VERSION = '2.2.2';
 const ECHO_SERVER_URL = 'wss://echo.websocket.org/';
 const bins = new Map();
 const texts = new Map();
@@ -1436,7 +1436,7 @@ class Connect {
       }
       return true;
     });
-    if (document.origin.startsWith('https://') && url.startsWith('ws://')) {
+    if (self.origin.startsWith('https://') && url.startsWith('ws://')) {
       const secureUrl = `wss://${url.slice('ws://'.length)}`;
       mlog([
         [
