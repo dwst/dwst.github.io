@@ -1,6 +1,19 @@
 'use strict';
 
-const VERSION = '2.1.1';
+/*
+Dark WebSocket Terminal
+
+CC0, http://creativecommons.org/publicdomain/zero/1.0/
+
+To the extent possible under law, Dark WebSocket Terminal developers have waived all copyright and related or neighboring rights to Dark WebSocket Terminal.
+
+Dark WebSocket Terminal developers:
+Toni Ruottu <toni.ruottu@iki.fi>, Finland 2010-2017
+William Orr <will@worrbase.com>, US 2012
+
+*/
+
+const VERSION = '2.2.0';
 const ECHO_SERVER_URL = 'wss://echo.websocket.org/';
 const bins = new Map();
 const texts = new Map();
@@ -136,6 +149,33 @@ class Connection {
 
 }
 
+class Reset {
+
+  commands() {
+    return ['reset'];
+  }
+
+  usage() {
+    return [
+      '/reset',
+    ];
+  }
+
+  examples() {
+    return [
+      '/reset',
+    ];
+  }
+
+  info() {
+    return 'reset the message buffer';
+  }
+
+  run() {
+    document.getElementById('ter1').innerHTML = '';
+  }
+}
+
 class Clear {
 
   commands() {
@@ -159,7 +199,7 @@ class Clear {
   }
 
   run() {
-    document.getElementById('ter1').innerHTML = '';
+    clearLog();
   }
 }
 
@@ -425,7 +465,7 @@ class Spam {
   }
 
   info() {
-    return 'run a command multiple times in a row';
+    return 'run a command multiple times';
   }
 
   run(timesStr, ...commandParts) {
@@ -729,11 +769,13 @@ class Splash {
 
   run() {
 
+    clearLog();
+
     /* eslint-disable quotes,object-property-newline */
 
     const SPLASH = [
       [
-        // ".        ..        ..        ..        ..        ..        ..        ..        ..        ..        ..        .",
+        // ".       HH.      dd .        ..  TT    ..        ..        ..        ..    TT  ..        . dd      .HH       .",
         "                                                                                                              ",
         "                                                                                                              ",
         "                                                                                                              ",
@@ -857,10 +899,9 @@ class Splash {
     })();
     const about = [
       [
-        'Dark WebSocket Terminal ',
         {
-          type: 'strong',
-          text: `${VERSION}`,
+          type: 'h1',
+          text: `Dark WebSocket Terminal ${VERSION}`,
         },
       ],
     ];
@@ -974,71 +1015,7 @@ class Help {
     return 'get help';
   }
 
-  run(command = null) {
-    if (command !== null) {
-      const plugin = commands.get(command);
-      if (typeof plugin === 'undefined') {
-        log(`the command does not exist: ${command}`, 'error');
-        return;
-      }
-      if (typeof plugin.usage === 'undefined') {
-        log(`no help available for: ${command}`, 'system');
-        return;
-      }
-      const breadCrumbs = [
-        {
-          type: 'dwstgg',
-          text: 'DWSTGG',
-        },
-        {
-          type: 'regular',
-          text: ' &raquo; ',
-          unsafe: true,
-        },
-        {
-          type: 'dwstgg',
-          text: `${command}`,
-          section: `${command}`,
-        },
-      ];
-      const info = plugin.info();
-      const title = [
-        {
-          type: 'strong',
-          text: `${command}`,
-        },
-        {
-          type: 'regular',
-          text: ' &ndash; ',
-          unsafe: true,
-        },
-        info,
-      ];
-      const usageItems = plugin.usage().map(usage => {
-        return {
-          type: 'syntax',
-          text: usage,
-        };
-      });
-      const usage = formatList('Usage', usageItems);
-      const examplesItems = plugin.examples().map(exampleCommand => {
-        return {
-          type: 'command',
-          text: exampleCommand,
-        };
-      });
-
-      const examplesTitle = (() => {
-        if (examplesItems.length < 2) {
-          return 'Example';
-        }
-        return 'Examples';
-      })();
-      const examples = formatList(examplesTitle, examplesItems);
-      const help = [breadCrumbs, '', title, ''].concat(usage).concat(['']).concat(examples).concat(['']);
-      mlog(help, 'system');
-      return;
-    }
+  _mainHelp() {
     const available = [];
     [...commands.keys()].sort().forEach(c => {
       if (c.length > 1) {
@@ -1047,31 +1024,367 @@ class Help {
           text: c,
           section: c,
           spacing: true,
+          wrap: false,
         };
         available.push(commandSegment);
       }
     });
 
-    const commandsList = [flatList('Commands', available)];
+    const commandsList = [flatList(available)];
 
     mlog([
       {
-        type: 'strong',
+        type: 'h1',
         text: 'DWST Guide to Galaxy',
       },
       '',
+      [
+        {
+          type: 'strong',
+          text: 'DWSTGG',
+        },
+        ' is here to help you get the most out of Dark WebSocket Terminal',
+      ],
+      '',
+      {
+        type: 'h2',
+        text: 'Topics',
+      },
+      '',
+      [
+        '- Working with ',
+        {
+          type: 'dwstgg',
+          text: 'unprotected',
+          section: '#unprotected',
+        },
+        ' WebSockets',
+      ],
+      [
+        '- Running the ',
+        {
+          type: 'dwstgg',
+          text: 'development',
+          section: '#development',
+        },
+        ' server',
+      ],
+      '',
+      [
+        'Open with ',
+        {
+          type: 'syntax',
+          text: '/help #<keyword>',
+        },
+      ],
+      '',
+      {
+        type: 'h2',
+        text: 'Commands',
+      },
+      '',
+    ].concat(commandsList).concat([
       [
         'Type ',
         {
           type: 'syntax',
           text: '/help <command>',
         },
-        ' for instructions.',
+        ' for instructions',
       ],
       '',
-    ].concat(commandsList).concat([
+    ]), 'system');
+  }
+
+  _createBreadCrumbs(section) {
+    return [
+      {
+        type: 'dwstgg',
+        text: 'DWSTGG',
+      },
+      {
+        type: 'regular',
+        text: ' &raquo; ',
+        unsafe: true,
+      },
+      {
+        type: 'dwstgg',
+        text: `${section}`,
+        section: `${section}`,
+      },
+    ];
+  }
+
+  _helpPage(page) {
+
+    const disclaimer = [
+      {
+        type: 'h2',
+        text: '!!! Follow at your own risk !!!',
+      },
+      '',
+      'Disabling security is generally a bad idea and you should only do it if you understand the implications.',
+    ];
+
+    if (page === '#chrome') {
+      mlog(([
+        this._createBreadCrumbs(page),
+        '',
+        {
+          type: 'h1',
+          text: 'Insecure WebSocket Access in Chrome',
+        },
+        '',
+        [
+          'Chrome lets you temporarily bypass the security feature that prevents you from connecting to ',
+          {
+            type: 'dwstgg',
+            text: 'unprotected',
+            section: '#unprotected',
+          },
+          ' WebSockets.',
+        ],
+        '',
+      ]).concat(disclaimer).concat([
+        '',
+        {
+          type: 'h2',
+          text: 'Instructions',
+        },
+        '',
+        [
+          '1. Use ',
+          {
+            type: 'dwstgg',
+            text: 'connect',
+            section: 'connect',
+          },
+          ' on a ws:// address',
+        ],
+        '2. Look for a shield icon',
+        '3. Click on the shield icon',
+        '4. Click "Load unsafe scripts"',
+        '5. Use connect again',
+        '',
+      ]), 'system');
+      return;
+    }
+    if (page === '#firefox') {
+      mlog(([
+        this._createBreadCrumbs(page),
+        '',
+        {
+          type: 'h1',
+          text: 'Insecure WebSocket Access in Firefox',
+        },
+        '',
+        [
+          'Firefox lets you disable the security feature that prevents you from connecting to ',
+          {
+            type: 'dwstgg',
+            text: 'unprotected',
+            section: '#unprotected',
+          },
+          ' WebSockets.',
+        ],
+        '',
+      ]).concat(disclaimer).concat([
+        '',
+        {
+          type: 'h2',
+          text: 'Instructions',
+        },
+        '',
+        '1. Go to about:config',
+        '2. Search for WebSocket',
+        '3. Set allowInsecureFromHTTPS to true',
+        '',
+      ]), 'system');
+      return;
+    }
+    if (page === '#development') {
+      const commands = [
+        'git clone https://github.com/dwst/dwst.git',
+        'cd dwst',
+        'npm install',
+        'gulp dev',
+      ];
+      const commandSegments = commands.map(c => {
+        return {
+          type: 'code',
+          text: c,
+        };
+      });
+      mlog(([
+        this._createBreadCrumbs(page),
+        '',
+        {
+          type: 'h1',
+          text: 'DWST Development Server',
+        },
+        '',
+        'You can run DWST development server by executing the following commands in the shell near you.',
+        '',
+      ]).concat(commandSegments).concat([
+        '',
+        [
+          'This is useful if you wish to customise DWST on source code level but can also be used to access ',
+          {
+            type: 'dwstgg',
+            text: 'unprotected',
+            section: '#unprotected',
+          },
+          ' WebSockets.',
+        ],
+        '',
+      ]), 'system');
+      return;
+    }
+    if (page === '#unprotected') {
+      mlog([
+        this._createBreadCrumbs(page),
+        '',
+        {
+          type: 'h1',
+          text: 'Working with Unprotected WebSockets',
+        },
+        '',
+        [
+          'Browsers tend to prevent unprotected WebSockets connections from secure origins. ',
+          'You may encounter this problem if your target WebSocket address starts with',
+          {
+            type: 'strong',
+            text: ' ws://',
+          },
+        ],
+        '',
+        {
+          type: 'h2',
+          text: 'Use wss INSTEAD',
+        },
+        '',
+        [
+          'The most straight forward fix is to use the secure address instead. ',
+          'However, the server needs to accept secure connections for this to work.',
+        ],
+        '',
+        {
+          type: 'h2',
+          text: 'Use Dev Server',
+        },
+        '',
+        [
+          'The connection restrictions apply to DWST since it is served over https. ',
+          'You can work around the problem by setting up the DWST ',
+          {
+            type: 'dwstgg',
+            text: 'development',
+            section: '#development',
+          },
+          ' server on your local work station.',
+        ],
+        '',
+        {
+          type: 'h2',
+          text: 'Disable Security',
+        },
+        '',
+        [
+          'Finally, you have the option of disabling related browser security features. ',
+          'However, doing this will screw up your security and release testing. ',
+          'Nevertheless we have instructions for ',
+          {
+            type: 'dwstgg',
+            text: 'Chrome',
+            section: '#chrome',
+          },
+          ' and ',
+          {
+            type: 'dwstgg',
+            text: 'Firefox',
+            section: '#firefox',
+          },
+          '.',
+        ],
+        '',
+      ], 'system');
+      return;
+    }
+
+    log(`Unkown help page: ${page}`, 'error');
+  }
+
+  _commandHelp(command) {
+    const plugin = commands.get(command);
+    if (typeof plugin === 'undefined') {
+      log(`the command does not exist: ${command}`, 'error');
+      return;
+    }
+    if (typeof plugin.usage === 'undefined') {
+      log(`no help available for: ${command}`, 'system');
+      return;
+    }
+    const usage = plugin.usage().map(usageExample => {
+      return {
+        type: 'syntax',
+        text: usageExample,
+      };
+    });
+    const examples = plugin.examples().map(exampleCommand => {
+      return {
+        type: 'command',
+        text: exampleCommand,
+      };
+    });
+
+    mlog([
+      this._createBreadCrumbs(command),
+      '',
+      [
+        {
+          type: 'h1',
+          text: `${command}`,
+        },
+        {
+          type: 'regular',
+          text: ' &ndash; ',
+          unsafe: true,
+        },
+        plugin.info(),
+      ],
+      '',
+      '',
+      {
+        type: 'h2',
+        text: 'Syntax',
+      },
+      '',
+    ].concat(usage).concat([
+      '',
+      {
+        type: 'h2',
+        text: 'Examples',
+      },
+      '',
+    ]).concat(examples).concat([
       '',
     ]), 'system');
+  }
+
+  run(parameter = null) {
+
+    clearLog();
+
+    if (parameter === null) {
+      this._mainHelp();
+      return;
+    }
+    const section = parameter.toLowerCase();
+    if (section.charAt(0) === '#') {
+      this._helpPage(section);
+      return;
+    }
+    this._commandHelp(section);
   }
 }
 
@@ -1083,7 +1396,7 @@ class Connect {
 
   usage() {
     return [
-      '/connect <ws-url> [protocol1[,protocol2[,...[,protocolN]]]]',
+      '/connect <ws-url> [p1[,p2[,...]]]',
     ];
   }
 
@@ -1091,7 +1404,7 @@ class Connect {
     return [
       '/connect wss://echo.websocket.org/',
       '/connect ws://echo.websocket.org/',
-      '/connect ws://127.0.0.1:1234/ p1.example.com,p2.example.com',
+      '/connect ws://127.0.0.1:1234/ protocol1.example.com,protocol2.example.com',
     ];
   }
 
@@ -1132,6 +1445,25 @@ class Connect {
       return [`Accepted protocols: ${protoFormatted}`];
     })();
     mlog([`Connecting to ${connection.url}`].concat(negotiation), 'system');
+    if (document.origin.startsWith('https://') && url.startsWith('ws://')) {
+      const secureUrl = `wss://${url.slice('ws://'.length)}`;
+      mlog([
+        [
+          'Attempting unprotected connection from a secure origin. ',
+          'See ',
+          {
+            type: 'dwstgg',
+            text: 'unprotected',
+            section: '#unprotected',
+          },
+          ' for details. Consider using ',
+          {
+            type: 'command',
+            text: `/connect ${secureUrl} ${protocolString}`,
+          },
+        ],
+      ], 'warning');
+    }
   }
 }
 
@@ -1164,7 +1496,23 @@ class Disconnect {
   }
 }
 
-const plugins = [Connect, Disconnect, Splash, Forget, Help, Send, Spam, Interval, Binary, Loadbin, Bins, Clear, Loadtext, Texts];
+const plugins = [
+  Binary,
+  Bins,
+  Clear,
+  Connect,
+  Disconnect,
+  Forget,
+  Help,
+  Interval,
+  Loadbin,
+  Loadtext,
+  Reset,
+  Send,
+  Spam,
+  Splash,
+  Texts,
+];
 const commands = new Map();
 
 for (const Constructor of plugins) {
@@ -1304,7 +1652,11 @@ function mlog(lines, type) {
         }
         if (segment.type === 'dwstgg') {
           const linkWrapper = document.createElement('span');
-          linkWrapper.setAttribute('class', 'dwst-mlog__help-link-wrapper');
+          const linkWrapperClasses = ['dwst-mlog__help-link-wrapper'];
+          if (segment.wrap === false) {
+            linkWrapperClasses.push('dwst-mlog__help-link-wrapper--nowrap');
+          }
+          linkWrapper.setAttribute('class', linkWrapperClasses.join(' '));
           const link = document.createElement('a');
           const classes = ['dwst-mlog__help-link'];
           if (segment.spacing === true) {
@@ -1382,9 +1734,27 @@ function mlog(lines, type) {
           textSpan.appendChild(byteGrid);
           return textSpan;
         }
+        if (segment.type === 'code') {
+          const textSpan = document.createElement('span');
+          textSpan.setAttribute('class', 'dwst-mlog__code');
+          textSpan.innerHTML = safeText;
+          return textSpan;
+        }
         if (segment.type === 'strong') {
           const textSpan = document.createElement('span');
           textSpan.setAttribute('class', 'dwst-mlog__strong');
+          textSpan.innerHTML = safeText;
+          return textSpan;
+        }
+        if (segment.type === 'h1') {
+          const textSpan = document.createElement('span');
+          textSpan.setAttribute('class', 'dwst-mlog__h1');
+          textSpan.innerHTML = safeText;
+          return textSpan;
+        }
+        if (segment.type === 'h2') {
+          const textSpan = document.createElement('span');
+          textSpan.setAttribute('class', 'dwst-mlog__h2');
           textSpan.innerHTML = safeText;
           return textSpan;
         }
@@ -1402,7 +1772,7 @@ function mlog(lines, type) {
   const time = currenttime();
   const terminal1 = document.getElementById('ter1');
   const logLine = document.createElement('div');
-  logLine.setAttribute('class', 'dwst-logline');
+  logLine.setAttribute('class', `dwst-logline dwst-logline--${type}`);
   logLine.innerHTML = `<span class="dwst-logline__item time">${time}</span><span class="dwst-logline__item dwst-direction dwst-direction--${type}">${type}:</span>`;
   const outputCell = document.createElement('span');
   outputCell.setAttribute('class', 'dwst-logline__item dwst-logline__item--main preserved');
@@ -1415,6 +1785,20 @@ function mlog(lines, type) {
   });
   logLine.appendChild(outputCell);
   terminal1.appendChild(logLine);
+  const screen = document.getElementById('screen1');
+  screen.scrollTop = screen.scrollHeight;
+  scrollLog();
+}
+
+function clearLog() {
+  const terminal1 = document.getElementById('ter1');
+  const logClear = document.createElement('div');
+  logClear.setAttribute('class', 'dwst-logclear');
+  terminal1.appendChild(logClear);
+  scrollLog();
+}
+
+function scrollLog() {
   const screen = document.getElementById('screen1');
   screen.scrollTop = screen.scrollHeight;
 }
@@ -1505,27 +1889,8 @@ function hexdump(buffer) {
   return lines;
 }
 
-function formatList(listTitle, lines) {
-  const titlePrefix = `${listTitle}: `;
-  const spacePrefix = new Array(titlePrefix.length + 1).join(' ');
-  return lines.map((line, i) => {
-    const prefix = (() => {
-      if (i === 0) {
-        return titlePrefix;
-      }
-      return spacePrefix;
-    })();
-    if (Array.isArray(line)) {
-      return [prefix].concat(line);
-    }
-    return [prefix, line];
-  });
-}
-
-function flatList(listTitle, values) {
+function flatList(values) {
   const segments = [];
-  segments.push(listTitle);
-  segments.push(': ');
   values.forEach(value => {
     value.afterText = ',';
     segments.push(value);
@@ -1843,7 +2208,7 @@ function updateGfxPositions() {
     let leftMargin = 0;
     if (maxFit < MAX_MAXCHARS) {
       const invisible = MAX_MAXCHARS - maxFit;
-      const invisibleLeft = Math.floor(invisible / 2);
+      const invisibleLeft = Math.round(invisible / 2);
       leftMargin -= invisibleLeft;
     }
     const field = maxDiv.getElementsByClassName('dwst-gfx__content')[0];
