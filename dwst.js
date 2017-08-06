@@ -13,7 +13,7 @@ William Orr <will@worrbase.com>, US 2012
 
 */
 
-const VERSION = '2.2.4';
+const VERSION = '2.2.5';
 const ECHO_SERVER_URL = 'wss://echo.websocket.org/';
 const bins = new Map();
 const texts = new Map();
@@ -36,15 +36,60 @@ function range(a, b = null) {
   return Array(length).fill().map((_, i) => start + i);
 }
 
+class FakeSocket {
+  constructor(url) {
+    this.url = url;
+    this.protocol = '';
+    this.readyState = 1;
+    this._path = url.split('//').pop();
+    window.setTimeout(() => {
+      this.onopen();
+    }, 0);
+  }
+
+  send(message) {
+    if (this._path === 'echo') {
+      const data = (() => {
+        if (typeof message === 'string') {
+          return message;
+        }
+        if (message instanceof ArrayBuffer) {
+          return new Blob([new Uint8Array(message)]);
+        }
+        throw new Error('Unexpected message type');
+      })();
+      window.setTimeout(() => {
+        this.onmessage({
+          data,
+        });
+      }, 0);
+    }
+  }
+
+  close() {
+    this.readyState = 3;
+    this.onclose({
+      code: 1000,
+      reason: '',
+    });
+  }
+}
+
 class Connection {
 
   constructor(url, protocols = []) {
     this.sessionStartTime = null;
     this.ws = (() => {
+      const SocketConstructor = (() => {
+        if (url.startsWith('dwst://')) {
+          return FakeSocket;
+        }
+        return WebSocket;
+      })();
       if (protocols.length < 1) {
-        return new WebSocket(url);
+        return new SocketConstructor(url);
       }
-      return new WebSocket(url, protocols);
+      return new SocketConstructor(url, protocols);
     })();
     this.ws.onopen = this._onopen.bind(this);
     this.ws.onclose = this._onclose.bind(this);
@@ -146,6 +191,9 @@ class Connection {
   }
 
   send(...params) {
+    if (this.ws.readyState !== 1) {
+      log(`Attempting to send data while ${this.verb}`, 'warning');
+    }
     this.ws.send(...params);
   }
 
@@ -823,18 +871,18 @@ class Splash {
         "                                                                                                              ",
         "                                                                                                              ",
         "                                                                                                              ",
-        "                                   11111                                                                      ",
-        "                                     111                                                                      ",
-        "                                      111                                                                     ",
-        "                                       11                                 1111                                ",
-        "                                       11                                 11                                  ",
-        "                                   1111 11  111       1111   11111111     1                                   ",
-        "                                 111  1111 111         1111 11      111  11                                   ",
-        "                                 11     11111           111 111       11111111                                ",
-        "                                 11     1111             111 11111111  11                                     ",
-        "                                 222     222     222      22       222 22                                     ",
-        "                                  222   22222   22222   222 22     222 222                                    ",
-        "                                   2222222 2222222 2222222  222222222   2222                                  ",
+        "                                   fffff                                                                      ",
+        "                                     fff                                                                      ",
+        "                                      fff                                                                     ",
+        "                                       ff                                 ffff                                ",
+        "                                       ff                                 ff                                  ",
+        "                                   ffff ff  fff       ffff   ffffffff     f                                   ",
+        "                                 fff  ffff fff         ffff ff      fff  ff                                   ",
+        "                                 ff     fffff           fff fff       ffffffff                                ",
+        "                                 ff     ffff             fff ffffffff  ff                                     ",
+        "                                 555     555     555      55       555 55                                     ",
+        "                                  555   55555   55555   555 55     555 555                                    ",
+        "                                   5555555 5555555 5555555  555555555   5555                                  ",
         "                                                                                                              ",
         "                                                                                                              ",
         "                                                                                                              ",
@@ -867,7 +915,6 @@ class Splash {
     /* eslint-enable quotes,object-property-newline */
 
     const CONNECTION_LIST_CAP = 3;
-    const historyLength = historyManager.getHistoryLength();
     const historySummary = historyManager.getSummary();
     const maybeTooManyConnectCommands =  historyManager.getConnectCommands(CONNECTION_LIST_CAP + 1);
     const connectCommands = maybeTooManyConnectCommands.slice(0, CONNECTION_LIST_CAP);
@@ -883,42 +930,21 @@ class Splash {
       }
       return [];
     })();
-    const historySection = (() => {
-      if (historyLength < 1) {
-        return [];
-      }
-      const forgetAdvertisement = [
-        'Type ',
+    const historySection = ([
+      historySummary.concat([
+        ', including ',
         {
-          type: 'strong',
-          text: '/forget everything',
+          type: 'dwstgg',
+          text: 'connect',
+          section: 'connect',
         },
-        ' to remove all stored history',
-      ];
-      if (connectCommands.length < 1) {
-        return [
-          '',
-          historySummary.concat(['.']),
-          '',
-          forgetAdvertisement,
-        ];
-      }
-      return [
-        '',
-        historySummary.concat([
-          ', including the following ',
-          {
-            type: 'dwstgg',
-            text: 'connect',
-            section: 'connect',
-          },
-          ' commands',
-        ]),
-      ].concat(connectionsLines).concat(tooManyWarning).concat([
-        '',
-        forgetAdvertisement,
-      ]);
-    })();
+        ' commands',
+      ]),
+    ]).concat(
+      connectionsLines,
+    ).concat(
+      tooManyWarning,
+    );
     const statusSection = (() => {
       if (connection === null) {
         return [];
@@ -927,7 +953,10 @@ class Splash {
         'Currently ',
         connection.verb,
         ' to ',
-        connection.url,
+        {
+          type: 'strong',
+          text: connection.url,
+        },
       ];
       const maybeProtocolStatus = (() => {
         const protocol = connection.protocol;
@@ -937,7 +966,10 @@ class Splash {
         return [
           [
             'Selected protocol: ',
-            protocol,
+            {
+              type: 'strong',
+              text: protocol,
+            },
           ],
         ];
       })();
@@ -950,12 +982,10 @@ class Splash {
         ' to end the connection',
       ];
       return ([
-        '',
         connectionStatus,
       ]).concat(maybeProtocolStatus).concat([
         '',
         disconnectInstructions,
-        '',
       ]);
     })();
     const about = [
@@ -967,30 +997,21 @@ class Splash {
       ],
     ];
     const beginnerInfo = [
-      '',
       [
-        '1. Connect to a server (type ',
+        '1. Create a test connection by typing ',
         {
           type: 'command',
           text: `/connect ${ECHO_SERVER_URL}`,
         },
-        ' for example)',
       ],
       [
-        '2. Type text into the box below to send messages',
+        '2. Type messages into the text input',
       ],
       [
-        '3. Disconnect by hitting the Escape key on your keyboard',
+        '3. Click on DWST logo if you get lost',
       ],
     ];
-    const maybeBeginnerInfo = (() => {
-      if (connectCommands.length < 1) {
-        return beginnerInfo;
-      }
-      return [];
-    })();
     const helpReminder = [
-      '',
       [
         'Type ',
         {
@@ -1000,19 +1021,93 @@ class Splash {
         ' to see the full range of available commands',
       ],
     ];
-    const statusOrHistory = (() => {
-      if (statusSection.length < 1) {
-        return historySection;
-      }
-      return statusSection;
-    })();
-    const sections = [
-      about,
-      maybeBeginnerInfo,
-      helpReminder,
-      statusOrHistory,
-      [''],
+    const privacyReminder = [
+      [
+        {
+          type: 'dwstgg',
+          text: 'Check',
+          section: '#privacy',
+          warning: true,
+        },
+        ' privacy and tracking info',
+      ],
     ];
+    const linkSection = [
+      [
+        {
+          type: 'link',
+          text: 'GitHub',
+          url: 'https://github.com/dwst/dwst',
+        },
+        {
+          type: 'regular',
+          text: ' &bull; ',
+          unsafe: true,
+        },
+        {
+          type: 'link',
+          text: 'chat',
+          url: 'https://gitter.im/dwst/dwst',
+        },
+        {
+          type: 'regular',
+          text: ' &bull; ',
+          unsafe: true,
+        },
+        {
+          type: 'link',
+          text: 'rfc6455',
+          url: 'https://tools.ietf.org/html/rfc6455',
+        },
+        {
+          type: 'regular',
+          text: ' &bull; ',
+          unsafe: true,
+        },
+        {
+          type: 'link',
+          text: 'protocols',
+          url: 'https://www.iana.org/assignments/websocket/websocket.xhtml',
+        },
+      ],
+    ];
+    const sections = (() => {
+      if (connection !== null) {
+        return [
+          about,
+          [''],
+          statusSection,
+          [''],
+          helpReminder,
+          [''],
+          linkSection,
+        ];
+      }
+      if (connectCommands.length > 0) {
+        return [
+          about,
+          [''],
+          historySection,
+          [''],
+          privacyReminder,
+          [''],
+          helpReminder,
+          [''],
+          linkSection,
+        ];
+      }
+      return [
+        about,
+        [''],
+        beginnerInfo,
+        [''],
+        privacyReminder,
+        [''],
+        helpReminder,
+        [''],
+        linkSection,
+      ];
+    })();
     gfx(...SPLASH);
     mlog([].concat(...sections), 'system');
   }
@@ -1042,16 +1137,20 @@ class Forget {
     return 'empty history';
   }
 
+  _removeHistory() {
+    historyManager.forget();
+    const historyLine = historyManager.getSummary().concat(['.']);
+    mlog(['Successfully forgot stored history!', historyLine], 'system');
+  }
+
   run(target) {
     if (target === 'everything') {
-      historyManager.forget();
+      this._removeHistory();
+      log("You may wish to use your browser's cleaning features to remove tracking cookies and other remaining traces.", 'warning');
     } else {
       const historyLine = historyManager.getSummary().concat(['.']);
       mlog([`Invalid argument: ${target}`, historyLine], 'error');
-      return;
     }
-    const historyLine = historyManager.getSummary().concat(['.']);
-    mlog([`Successfully forgot ${target}!`, historyLine], 'system');
   }
 
 }
@@ -1131,13 +1230,7 @@ class Help {
         text: 'DWST Guide to Galaxy',
       },
       '',
-      [
-        {
-          type: 'strong',
-          text: 'DWSTGG',
-        },
-        ' is here to help you get the most out of Dark WebSocket Terminal',
-      ],
+      'DWSTGG is here to help you get the most out of Dark WebSocket Terminal',
       '',
       {
         type: 'h2',
@@ -1148,19 +1241,28 @@ class Help {
         '- Working with ',
         {
           type: 'dwstgg',
-          text: 'unprotected',
+          text: '#unprotected',
           section: '#unprotected',
         },
-        ' WebSockets',
+        ' sockets',
       ],
       [
         '- Running the ',
         {
           type: 'dwstgg',
-          text: 'development',
+          text: '#development',
           section: '#development',
         },
         ' server',
+      ],
+      [
+        '- ',
+        {
+          type: 'dwstgg',
+          text: '#privacy',
+          section: '#privacy',
+        },
+        ' and tracking information',
       ],
       '',
       [
@@ -1213,7 +1315,7 @@ class Help {
           'Chrome lets you temporarily bypass the security feature that prevents you from connecting to ',
           {
             type: 'dwstgg',
-            text: 'unprotected',
+            text: '#unprotected',
             section: '#unprotected',
           },
           ' WebSockets.',
@@ -1256,7 +1358,7 @@ class Help {
           'Firefox lets you disable the security feature that prevents you from connecting to ',
           {
             type: 'dwstgg',
-            text: 'unprotected',
+            text: '#unprotected',
             section: '#unprotected',
           },
           ' WebSockets.',
@@ -1305,7 +1407,7 @@ class Help {
           'This is useful if you wish to customise DWST on source code level but can also be used to access ',
           {
             type: 'dwstgg',
-            text: 'unprotected',
+            text: '#unprotected',
             section: '#unprotected',
           },
           ' WebSockets.',
@@ -1352,7 +1454,7 @@ class Help {
           'You can work around the problem by setting up the DWST ',
           {
             type: 'dwstgg',
-            text: 'development',
+            text: '#development',
             section: '#development',
           },
           ' server on your local work station.',
@@ -1369,19 +1471,76 @@ class Help {
           'Nevertheless we have instructions for ',
           {
             type: 'dwstgg',
-            text: 'Chrome',
+            text: '#Chrome',
             section: '#chrome',
           },
           ' and ',
           {
             type: 'dwstgg',
-            text: 'Firefox',
+            text: '#Firefox',
             section: '#firefox',
           },
           '.',
         ],
         '',
       ], 'system');
+      return;
+    }
+    if (page === '#privacy') {
+      const gaSection = [
+        'We use ',
+        {
+          type: 'link',
+          text: 'Google Analytics',
+          url: 'https://www.google.com/analytics/',
+        },
+        ' to collect information about DWST usage. ',
+        'The main motivation is to collect statistical information to aid us develop and promote the software. ',
+      ];
+      const disableTracking = [
+        'There are several ways to disable tracking. ',
+        'You could use some browser extension that blocks Google Analytics or',
+        'you could use the DWST ',
+        {
+          type: 'dwstgg',
+          text: '#development',
+          section: '#development',
+        },
+        ' server which should have Google Analytics disabled.',
+      ];
+      const storageSection = [
+        'Google Analytics stores some information in cookies. ',
+        'DWST itself uses local storage for storing command history. ',
+        'You may use the built-in ',
+        {
+          type: 'dwstgg',
+          text: 'forget',
+          section: 'forget',
+        },
+        ' command to quickly remove stored command history. ',
+        'Consider using tools provided by your browser for more serious cleaning.',
+      ];
+      const futureChanges = [
+        'This describes how we do things today. ',
+        'Check this page again sometime for possible updates on privacy and tracking considerations.',
+      ];
+      mlog(([
+        this._createBreadCrumbs(page),
+        '',
+        {
+          type: 'h1',
+          text: 'Privacy and Tracking Information',
+        },
+        '',
+        gaSection,
+        '',
+        disableTracking,
+        '',
+        storageSection,
+        '',
+        futureChanges,
+        '',
+      ]), 'system');
       return;
     }
 
@@ -1518,7 +1677,7 @@ class Connect {
           'See ',
           {
             type: 'dwstgg',
-            text: 'unprotected',
+            text: '#unprotected',
             section: '#unprotected',
           },
           ' for details. Consider using ',
@@ -1736,6 +1895,9 @@ function mlog(lines, type) {
           if (segment.spacing === true) {
             classes.push('dwst-mlog__help-link--spacing');
           }
+          if (segment.warning === true) {
+            classes.push('dwst-mlog__help-link--warning');
+          }
           link.setAttribute('class', classes.join(' '));
           const command = (() => {
             if (segment.hasOwnProperty('section')) {
@@ -1835,6 +1997,14 @@ function mlog(lines, type) {
         if (segment.type === 'syntax') {
           const textSpan = document.createElement('span');
           textSpan.setAttribute('class', 'dwst-mlog__syntax');
+          textSpan.innerHTML = safeText;
+          return textSpan;
+        }
+        if (segment.type === 'link') {
+          const textSpan = document.createElement('a');
+          textSpan.setAttribute('href', segment.url);
+          textSpan.setAttribute('target', '_blank');
+          textSpan.setAttribute('class', 'dwst-mlog__link');
           textSpan.innerHTML = safeText;
           return textSpan;
         }
@@ -1986,8 +2156,7 @@ function blog(buffer, type) {
       text: line.text,
       hexes: line.hexes,
     };
-  }
-  );
+  });
   mlog([msg].concat(hexLines), type);
 }
 
