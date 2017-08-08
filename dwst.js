@@ -13,7 +13,7 @@ William Orr <will@worrbase.com>, US 2012
 
 */
 
-const VERSION = '2.2.5';
+const VERSION = '2.2.6';
 const ECHO_SERVER_URL = 'wss://echo.websocket.org/';
 const bins = new Map();
 const texts = new Map();
@@ -1066,7 +1066,7 @@ class Splash {
         },
         {
           type: 'link',
-          text: 'protocols',
+          text: 'iana',
           url: 'https://www.iana.org/assignments/websocket/websocket.xhtml',
         },
       ],
@@ -1646,6 +1646,20 @@ class Connect {
   }
 
   run(url, protocolString = '') {
+    if (connection !== null) {
+      mlog([
+        'Already connected to a server',
+        [
+          'Type ',
+          {
+            type: 'command',
+            text: '/disconnect',
+          },
+          ' to end the conection',
+        ],
+      ], 'error');
+      return;
+    }
     const protoCandidates = (() => {
       if (protocolString === '') {
         return [];
@@ -1723,6 +1737,9 @@ class Disconnect {
   }
 
   run() {
+    if (connection === null) {
+      log('No connection to disconnect', 'warning');
+    }
     const protocol = [];
     mlog([`Closing connection to ${connection.url}`].concat(protocol), 'system');
     connection.close();
@@ -2004,6 +2021,7 @@ function mlog(lines, type) {
           const textSpan = document.createElement('a');
           textSpan.setAttribute('href', segment.url);
           textSpan.setAttribute('target', '_blank');
+          textSpan.setAttribute('rel', 'noopener');
           textSpan.setAttribute('class', 'dwst-mlog__link');
           textSpan.innerHTML = safeText;
           return textSpan;
@@ -2014,7 +2032,6 @@ function mlog(lines, type) {
     return htmlSegments;
   });
   const time = currenttime();
-  const terminal1 = document.getElementById('ter1');
   const logLine = document.createElement('div');
   logLine.setAttribute('class', `dwst-logline dwst-logline--${type}`);
   logLine.innerHTML = `<span class="dwst-logline__item time">${time}</span><span class="dwst-logline__item dwst-direction dwst-direction--${type}">${type}:</span>`;
@@ -2028,23 +2045,53 @@ function mlog(lines, type) {
     outputCell.appendChild(br);
   });
   logLine.appendChild(outputCell);
-  terminal1.appendChild(logLine);
-  const screen = document.getElementById('screen1');
-  screen.scrollTop = screen.scrollHeight;
-  scrollLog();
+  addLogLine(logLine);
 }
 
 function clearLog() {
-  const terminal1 = document.getElementById('ter1');
   const logClear = document.createElement('div');
   logClear.setAttribute('class', 'dwst-logclear');
-  terminal1.appendChild(logClear);
+  addLogLine(logClear);
+}
+
+function addLogLine(logLine) {
+  const terminal = document.getElementById('ter1');
+  const userWasScrolling = isUserScrolling();
+  terminal.appendChild(logLine);
+  if (userWasScrolling) {
+    return;
+  }
   scrollLog();
 }
 
 function scrollLog() {
   const screen = document.getElementById('screen1');
   screen.scrollTop = screen.scrollHeight;
+}
+
+function isUserScrolling() {
+  const screen = document.getElementById('screen1');
+  return (screen.scrollTop !== (screen.scrollHeight - screen.offsetHeight));
+}
+
+function scrollNotificationUpdate() {
+  if (isUserScrolling()) {
+    showScrollNotification();
+    return;
+  }
+  hideScrollNotification();
+}
+
+function showScrollNotification() {
+  [...document.getElementsByClassName('js-scroll-notification')].forEach(sn => {
+    sn.removeAttribute('style');
+  });
+}
+
+function hideScrollNotification() {
+  [...document.getElementsByClassName('js-scroll-notification')].forEach(sn => {
+    sn.setAttribute('style', 'display: none;');
+  });
 }
 
 function gfx(lines, colors) {
@@ -2069,10 +2116,7 @@ function gfx(lines, colors) {
   gfxContainer.setAttribute('aria-hidden', 'true');
   gfxContainer.appendChild(gfxContent);
 
-  const terminal1 = document.getElementById('ter1');
-  terminal1.appendChild(gfxContainer);
-  const screen = document.getElementById('screen1');
-  screen.scrollTop = screen.scrollHeight;
+  addLogLine(gfxContainer);
 
   updateGfxPositions();
 }
@@ -2485,6 +2529,10 @@ function init() {
   document.getElementById('menubut1').addEventListener('click', () => {
     loud('/splash');
   });
+  [...document.getElementsByClassName('js-auto-scroll-button')].forEach(asb => {
+    asb.addEventListener('click', scrollLog);
+  });
+  setInterval(scrollNotificationUpdate, 100);
   document.getElementById('msg1').focus();
 
 }
