@@ -40,7 +40,7 @@
   --dwst-color-pink: #d6a;
   --dwst-color-pink--light: #f8c;
   --dwst-color-purple: #614;
-  --dwst-color-purple--transparent: rgba(102, 17, 68, 0.5);
+  --dwst-color-purple--transparent: rgba(102, 17, 68, 0.53333);
   --dwst-color-purple--light: #936;
   --dwst-color-red: #f00;
   --dwst-color-red--light: #c77;
@@ -64,194 +64,18 @@
   --dwst-bar-height: 24pt;
 }
 
-body {
-  margin: 0;
-  font-family: monospace;
-  font-size: 3.9vw;
-  height: 100%;
-  background-color: var(--dwst-color-black--af);
-}
+/**
 
-@media only screen and (min-width: 500px) {
-  body {
-    font-size: 10pt;
-  }
-}
+  Authors: Toni Ruottu, Finland 2010-2017
 
-.button {
-  width: auto;
-  padding: 0 1em 0 0;
-}
+  This file is part of Dark WebSocket Terminal.
 
-input[type="text"] {
-  background-color: var(--dwst-color-gray-4);
-  color: var(--dwst-color-white);
-  font-family: monospace;
-  border: thin solid var(--dwst-color-red);
-}
+  CC0 1.0 Universal, http://creativecommons.org/publicdomain/zero/1.0/
 
-.bar2 input[type="text"] {
-  background-color: var(--dwst-color-gray-1);
-  border-width: 0;
-  width: 100%;
-  outline: none;
-}
+  To the extent possible under law, Dark WebSocket Terminal developers have waived all
+  copyright and related or neighboring rights to Dark WebSocket Terminal.
 
-.bar2 input[type="text"]:active {
-  border-width: 0;
-}
-
-.consolebar input[type="button"] {
-  padding: 0;
-  width: 5em;
-}
-
-.preserved {
-  white-space: pre-wrap;
-}
-
-.consolebar {
-  position: absolute;
-  bottom: 0;
-  width: 100%;
-  height: var(--dwst-bar-height);
-  background-color: var(--dwst-color-gray-2);
-}
-
-.consolebar .time {
-  font-family: monospace;
-  width: 1em;
-  color: var(--dwst-color-gray-d);
-}
-
-.sec {
-  color: var(--dwst-color-gray-7);
-}
-
-.consolebar .leftpad {
-  padding-left: 1em;
-}
-
-.consolebar .rightpad {
-  padding-right: 1em;
-}
-
-.bar2 {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  height: var(--dwst-bar-height);
-}
-
-.dwst-mlog__help-link-wrapper--nowrap {
-  white-space: nowrap;
-}
-
-.dwst-mlog__help-link {
-  color: var(--dwst-color-gray);
-  font-style: italic;
-  text-decoration: none;
-}
-
-.dwst-mlog__help-link--spacing {
-  display: inline-block;
-  padding-bottom: 1ch;
-}
-
-.dwst-mlog__help-link--warning {
-  color: var(--dwst-color-white);
-  font-style: normal;
-  text-decoration: underline;
-}
-
-.dwst-mlog__help-link:hover {
-  color: var(--dwst-color-yellow--light);
-  text-decoration: none;
-}
-
-.dwst-mlog__command-link {
-  color: var(--dwst-color-cyan);
-  text-decoration: none;
-  text-indent: -2ch;
-  margin-left: 2ch;
-  display: inline-block;
-}
-
-.dwst-mlog__command-link:hover {
-  color: var(--dwst-color-cyan--light);
-  text-decoration: none;
-}
-
-.dwst-mlog__hexline {
-  display: inline-block;
-  color: var(--dwst-color-gray);
-}
-
-.dwst-mlog__code {
-  color: var(--dwst-color-pink);
-}
-
-.dwst-mlog__strong {
-  color: var(--dwst-color-pink);
-  font-weight: bold;
-}
-
-.dwst-mlog__h1 {
-  color: var(--dwst-color-white);
-  font-weight: bold;
-}
-
-.dwst-mlog__h2 {
-  color: var(--dwst-color-white);
-  text-transform: uppercase;
-}
-
-.dwst-mlog__link {
-  color: var(--dwst-color-blue);
-}
-
-.dwst-mlog__link:hover {
-  color: var(--dwst-color-pink--light);
-}
-
-.dwst-mlog__syntax {
-  font-style: italic;
-  text-indent: -2ch;
-  margin-left: 2ch;
-  display: inline-block;
-}
-
-.splash-button {
-  position: relative;
-  top: -3px;
-  height: 26px;
-  width: 48px;
-  background-image: url('../images/minilogo.png');
-}
-
-.splash-button:hover {
-  background-image: url('../images/minilogo-hover.png');
-  cursor: pointer;
-}
-
-.send-button {
-  position: relative;
-  top: 0;
-  height: 26px;
-  width: 26px;
-  background-image: url('../images/return.png');
-}
-
-.send-button:hover {
-  background-image: url('../images/return-hover.png');
-  cursor: pointer;
-}
-
-.input-holder {
-  width: 100%;
-  padding-right: 0.2em;
-}
+*/
 
 ::-webkit-scrollbar {
   height: 14px;
@@ -271,129 +95,226 @@ input[type="text"] {
   background: var(--dwst-color-wtf2);
 }
 
-.dwst-background {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: var(--dwst-bar-height);
-  width: 42ch;
-  max-width: 100%;
-}
+/**
 
-@media only screen and (min-width: 600px) {
-  .dwst-background {
-    width: 74ch;
-  }
-}
+  Authors: Toni Ruottu, Finland 2010-2017
 
-@media screen and (min-width: 750px) {
-  .dwst-background {
-    width: 110ch;
-  }
-}
+  This file is part of Dark WebSocket Terminal.
 
-.dwst-debug .dwst-background {
-  background-color: var(--dwst-color-debug-orange);
-}
+  CC0 1.0 Universal, http://creativecommons.org/publicdomain/zero/1.0/
 
-.dwst-background__content-area {
-  position: absolute;
-  top: 0;
-  left: 2ch;
-  right: 0;
-  bottom: 0;
-  width: 38ch;
-  max-width: 100%;
-}
+  To the extent possible under law, Dark WebSocket Terminal developers have waived all
+  copyright and related or neighboring rights to Dark WebSocket Terminal.
 
-@media only screen and (min-width: 600px) {
-  .dwst-background__content-area {
-    width: 70ch;
-  }
-}
+*/
 
-@media screen and (min-width: 750px) {
-  .dwst-background__content-area {
-    left: 20ch;
-  }
-}
-
-.dwst-debug .dwst-background__content-area {
-  background-color: var(--dwst-color-debug-brown);
-}
-
-#screen1 {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: var(--dwst-bar-height);
-  overflow: hidden;
-  overflow-y: scroll;
-  vertical-align: top;
-  -webkit-user-select: text;
-     -moz-user-select: text;
-      -ms-user-select: text;
-          user-select: text;
-  cursor: text;
-}
-
-.terminal {
-  min-height: 100%;
+.dwst-base {
   background-color: var(--dwst-color-black);
   color: var(--dwst-color-gray--light);
   font-family: monospace;
+  font-size: 3.9vw;
+  height: 100%;
+  margin: 0;
 }
 
-.dwst-debug .terminal {
-  background-color: transparent;
-}
-
-/* clean ********************************************************************/
-
-.dwst-logclear {
-  float: left;
-  height: calc(100vh - var(--dwst-bar-height));
-}
-
-.dwst-logline {
-  padding: 0 1ch;
-  display: grid;
-  grid-template-columns: 1ch calc(100% - 2ch);
-  grid-column-gap: 1ch;
-}
-
-.dwst-logline--command {
-  margin-top: 1ch;
-}
-
-.dwst-logline__item {
-  vertical-align: top;
-}
-
-.dwst-logline__item--main {
-  word-wrap: break-word;
-  -webkit-hyphens: none;
-      -ms-hyphens: none;
-          hyphens: none;
-}
-
-@media screen and (min-width: 750px) {
-  .dwst-logline {
-    grid-template-columns: 8ch 10ch calc(100% - 8ch - 10ch - 2 * 1ch);
+@media only screen and (min-width: 500px) {
+  .dwst-base {
+    font-size: 10pt;
   }
 }
 
-.dwst-logline__item.time {
+/**
+
+  Authors: Toni Ruottu, Finland 2010-2017
+
+  This file is part of Dark WebSocket Terminal.
+
+  CC0 1.0 Universal, http://creativecommons.org/publicdomain/zero/1.0/
+
+  To the extent possible under law, Dark WebSocket Terminal developers have waived all
+  copyright and related or neighboring rights to Dark WebSocket Terminal.
+
+*/
+
+.dwst-bar {
+  width: 100%;
+  height: 100%;
+  display: table;
+  background-color: var(--dwst-color-gray-2);
+  border-spacing: 1em 0;
+}
+
+.dwst-bar__item {
+  display: table-cell;
+  vertical-align: middle;
+}
+
+.dwst-bar__item--grow {
+  width: 100%;
+}
+
+/**
+
+  Authors: Toni Ruottu, Finland 2010-2017
+
+  This file is part of Dark WebSocket Terminal.
+
+  CC0 1.0 Universal, http://creativecommons.org/publicdomain/zero/1.0/
+
+  To the extent possible under law, Dark WebSocket Terminal developers have waived all
+  copyright and related or neighboring rights to Dark WebSocket Terminal.
+
+*/
+
+.dwst-button {
+  display: block;
+  border-width: 0;
+  cursor: pointer;
+  background-repeat: no-repeat;
+  background-color: transparent;
+  outline: none;
+}
+
+.dwst-button--send {
+  height: var(--dwst-bar-height);
+  width: var(--dwst-bar-height);
+  background-image: url('../images/return.png');
+  background-position: 4px;
+}
+
+.dwst-button--send:hover {
+  background-image: url('../images/return-hover.png');
+}
+
+.dwst-button--splash {
+  height: calc(var(--dwst-bar-height));
+  width: 48px;
+  background-image: url('../images/minilogo.png');
+}
+
+.dwst-button--splash:hover {
+  background-image: url('../images/minilogo-hover.png');
+}
+
+.dwst-button--splash-connected {
+  height: calc(var(--dwst-bar-height));
+  width: 48px;
+  background-image: url('../images/minilogo-connected.png');
+}
+
+.dwst-button--splash-connected:hover {
+  background-image: url('../images/minilogo-connected-hover.png');
+}
+
+/**
+
+  Authors: Toni Ruottu, Finland 2010-2017
+
+  This file is part of Dark WebSocket Terminal.
+
+  CC0 1.0 Universal, http://creativecommons.org/publicdomain/zero/1.0/
+
+  To the extent possible under law, Dark WebSocket Terminal developers have waived all
+  copyright and related or neighboring rights to Dark WebSocket Terminal.
+
+*/
+
+.dwst-byte-grid {
+  font-family: monospace;
+  display: grid;
+  grid-template-columns: 13ch 13ch 5ch 5ch;
+}
+
+.dwst-byte-grid__item {
+  white-space: pre;
+}
+
+.dwst-byte-grid__item:nth-child(3) {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.dwst-byte-grid__item:nth-child(7) {
+  grid-column: 2;
+  grid-row: 2;
+}
+
+.dwst-byte-grid__item:nth-child(2):before {
+  content: '|';
+}
+
+.dwst-byte-grid__item:nth-child(4):after {
+  content: '|';
+}
+
+.dwst-byte-grid__item:nth-child(6):before {
+  content: '|';
+}
+
+.dwst-byte-grid__item:nth-child(8):after {
+  content: '|';
+}
+
+.dwst-byte-grid--less-than-three .dwst-byte-grid__item:nth-child(5) {
   display: none;
 }
 
-@media screen and (min-width: 750px) {
-  .dwst-logline__item.time {
+.dwst-byte-grid--less-than-three .dwst-byte-grid__item:nth-child(6) {
+  display: none;
+}
+
+.dwst-byte-grid--less-than-three .dwst-byte-grid__item:nth-child(7) {
+  display: none;
+}
+
+.dwst-byte-grid--less-than-three .dwst-byte-grid__item:nth-child(8) {
+  display: none;
+}
+
+@media only screen and (min-width: 600px) {
+  .dwst-byte-grid {
+    grid-template-columns: 12ch 13ch 12ch 13ch 5ch 4ch 4ch 5ch;
+  }
+  .dwst-byte-grid__item:nth-child(5) {
+    grid-column: 3;
+    grid-row: 1;
+  }
+  .dwst-byte-grid__item:nth-child(7) {
+    grid-column: 4;
+    grid-row: 1;
+  }
+  .dwst-byte-grid__item:nth-child(4):after {
+    content: '';
+  }
+  .dwst-byte-grid__item:nth-child(6):before {
+    content: '';
+  }
+  .dwst-byte-grid--less-than-three .dwst-byte-grid__item:nth-child(5) {
+    display: initial;
+  }
+  .dwst-byte-grid--less-than-three .dwst-byte-grid__item:nth-child(6) {
+    display: initial;
+  }
+  .dwst-byte-grid--less-than-three .dwst-byte-grid__item:nth-child(7) {
+    display: initial;
+  }
+  .dwst-byte-grid--less-than-three .dwst-byte-grid__item:nth-child(8) {
     display: initial;
   }
 }
+
+/**
+
+  Authors: Toni Ruottu, Finland 2010-2017
+
+  This file is part of Dark WebSocket Terminal.
+
+  CC0 1.0 Universal, http://creativecommons.org/publicdomain/zero/1.0/
+
+  To the extent possible under law, Dark WebSocket Terminal developers have waived all
+  copyright and related or neighboring rights to Dark WebSocket Terminal.
+
+*/
 
 .dwst-direction {
   overflow: hidden;
@@ -422,6 +343,24 @@ input[type="text"] {
 
 .dwst-direction--system {
   color: var(--dwst-color-green--light);
+}
+
+/**
+
+  Authors: Toni Ruottu, Finland 2010-2017
+
+  This file is part of Dark WebSocket Terminal.
+
+  CC0 1.0 Universal, http://creativecommons.org/publicdomain/zero/1.0/
+
+  To the extent possible under law, Dark WebSocket Terminal developers have waived all
+  copyright and related or neighboring rights to Dark WebSocket Terminal.
+
+*/
+
+.dwst-gfx {
+  max-width: 110ch;
+  overflow: hidden;
 }
 
 .dwst-gfx__content {
@@ -520,108 +459,283 @@ input[type="text"] {
   color: var(--dwst-color-pink--light);
 }
 
-.dwst-bytegrid {
-  font-family: monospace;
-  display: grid;
-  grid-template-columns: 13ch 13ch 5ch 5ch;
+/**
+
+  Authors: Toni Ruottu, Finland 2010-2017
+
+  This file is part of Dark WebSocket Terminal.
+
+  CC0 1.0 Universal, http://creativecommons.org/publicdomain/zero/1.0/
+
+  To the extent possible under law, Dark WebSocket Terminal developers have waived all
+  copyright and related or neighboring rights to Dark WebSocket Terminal.
+
+*/
+
+.dwst-layout {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
 }
 
-.dwst-bytegrid__item {
-  white-space: pre;
+.dwst-layout__control-area {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  height: var(--dwst-bar-height);
 }
 
-.dwst-bytegrid__item:nth-child(3) {
-  grid-column: 2;
-  grid-row: 1;
-}
-
-.dwst-bytegrid__item:nth-child(7) {
-  grid-column: 2;
-  grid-row: 2;
-}
-
-.dwst-bytegrid__item:nth-child(2):before {
-  content: '|';
-}
-
-.dwst-bytegrid__item:nth-child(4):after {
-  content: '|';
-}
-
-.dwst-bytegrid__item:nth-child(6):before {
-  content: '|';
-}
-
-.dwst-bytegrid__item:nth-child(8):after {
-  content: '|';
-}
-
-.dwst-bytegrid--less-than-three .dwst-bytegrid__item:nth-child(5) {
-  display: none;
-}
-
-.dwst-bytegrid--less-than-three .dwst-bytegrid__item:nth-child(6) {
-  display: none;
-}
-
-.dwst-bytegrid--less-than-three .dwst-bytegrid__item:nth-child(7) {
-  display: none;
-}
-
-.dwst-bytegrid--less-than-three .dwst-bytegrid__item:nth-child(8) {
-  display: none;
+.dwst-layout__background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: var(--dwst-bar-height);
+  width: 42ch;
+  max-width: 100%;
 }
 
 @media only screen and (min-width: 600px) {
-  .dwst-bytegrid {
-    grid-template-columns: 12ch 13ch 12ch 13ch 5ch 4ch 4ch 5ch;
-  }
-  .dwst-bytegrid__item:nth-child(5) {
-    grid-column: 3;
-    grid-row: 1;
-  }
-  .dwst-bytegrid__item:nth-child(7) {
-    grid-column: 4;
-    grid-row: 1;
-  }
-  .dwst-bytegrid__item:nth-child(4):after {
-    content: '';
-  }
-  .dwst-bytegrid__item:nth-child(6):before {
-    content: '';
-  }
-  .dwst-bytegrid--less-than-three .dwst-bytegrid__item:nth-child(5) {
-    display: initial;
-  }
-  .dwst-bytegrid--less-than-three .dwst-bytegrid__item:nth-child(6) {
-    display: initial;
-  }
-  .dwst-bytegrid--less-than-three .dwst-bytegrid__item:nth-child(7) {
-    display: initial;
-  }
-  .dwst-bytegrid--less-than-three .dwst-bytegrid__item:nth-child(8) {
-    display: initial;
+  .dwst-layout__background {
+    width: 74ch;
   }
 }
 
-.dwst-gfx {
-  max-width: 110ch;
-  overflow: hidden;
+@media screen and (min-width: 750px) {
+  .dwst-layout__background {
+    width: 110ch;
+  }
 }
 
-.dwst-hide {
+.dwst-debug .dwst-layout__background {
+  background-color: var(--dwst-color-debug-orange);
+}
+
+.dwst-layout__guide {
   position: absolute;
-  left: -10000px;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
+  top: 0;
+  left: 2ch;
+  right: 0;
+  bottom: 0;
+  width: 38ch;
+  max-width: 100%;
 }
 
-.dwst-notification {
+@media only screen and (min-width: 600px) {
+  .dwst-layout__guide {
+    width: 70ch;
+  }
+}
+
+@media screen and (min-width: 750px) {
+  .dwst-layout__guide {
+    left: 20ch;
+  }
+}
+
+.dwst-debug .dwst-layout__guide {
+  background-color: var(--dwst-color-debug-brown);
+}
+
+.dwst-layout__content-area {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: var(--dwst-bar-height);
+}
+
+.dwst-layout__notification-area {
   position: absolute;
   bottom: calc(var(--dwst-bar-height));
   left: 0;
   right: 0;
+}
+
+/**
+
+  Authors: Toni Ruottu, Finland 2010-2017
+
+  This file is part of Dark WebSocket Terminal.
+
+  CC0 1.0 Universal, http://creativecommons.org/publicdomain/zero/1.0/
+
+  To the extent possible under law, Dark WebSocket Terminal developers have waived all
+  copyright and related or neighboring rights to Dark WebSocket Terminal.
+
+*/
+
+.dwst-log-entry {
+  padding: 0 1ch;
+  display: grid;
+  grid-template-columns: 1ch calc(100% - 2ch);
+  grid-column-gap: 1ch;
+}
+
+@media screen and (min-width: 750px) {
+  .dwst-log-entry {
+    grid-template-columns: 8ch 10ch calc(100% - 8ch - 10ch - 2 * 1ch);
+  }
+}
+
+.dwst-log-entry__time {
+  vertical-align: top;
+  display: none;
+}
+
+@media screen and (min-width: 750px) {
+  .dwst-log-entry__time {
+    display: initial;
+  }
+}
+
+.dwst-log-entry__direction {
+  vertical-align: top;
+}
+
+.dwst-log-entry__content {
+  vertical-align: top;
+}
+
+/**
+
+  Authors: Toni Ruottu, Finland 2010-2017
+
+  This file is part of Dark WebSocket Terminal.
+
+  CC0 1.0 Universal, http://creativecommons.org/publicdomain/zero/1.0/
+
+  To the extent possible under law, Dark WebSocket Terminal developers have waived all
+  copyright and related or neighboring rights to Dark WebSocket Terminal.
+
+*/
+
+.dwst-log__clear {
+  float: left;
+  height: calc(100vh - var(--dwst-bar-height));
+}
+
+.dwst-log__item--command {
+  margin-top: 1ch;
+}
+
+/**
+
+  Authors: Toni Ruottu, Finland 2010-2017
+
+  This file is part of Dark WebSocket Terminal.
+
+  CC0 1.0 Universal, http://creativecommons.org/publicdomain/zero/1.0/
+
+  To the extent possible under law, Dark WebSocket Terminal developers have waived all
+  copyright and related or neighboring rights to Dark WebSocket Terminal.
+
+*/
+
+.dwst-mlog {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  -webkit-hyphens: none;
+      -ms-hyphens: none;
+          hyphens: none;
+}
+
+.dwst-mlog__help-link-wrapper--nowrap {
+  white-space: nowrap;
+}
+
+.dwst-mlog__help-link {
+  color: var(--dwst-color-gray);
+  font-style: italic;
+  text-decoration: none;
+}
+
+.dwst-mlog__help-link--spacing {
+  display: inline-block;
+  padding-bottom: 1ch;
+}
+
+.dwst-mlog__help-link--warning {
+  color: var(--dwst-color-white);
+  font-style: normal;
+  text-decoration: underline;
+}
+
+.dwst-mlog__help-link:hover {
+  color: var(--dwst-color-yellow--light);
+  text-decoration: none;
+}
+
+.dwst-mlog__help-link--warning:hover {
+  color: var(--dwst-color-white);
+  font-style: normal;
+  text-decoration: underline;
+}
+
+.dwst-mlog__command-link {
+  color: var(--dwst-color-cyan);
+  text-decoration: none;
+  text-indent: -2ch;
+  margin-left: 2ch;
+  display: inline-block;
+}
+
+.dwst-mlog__command-link:hover {
+  color: var(--dwst-color-cyan--light);
+  text-decoration: none;
+}
+
+.dwst-mlog__hexline {
+  display: inline-block;
+  color: var(--dwst-color-gray);
+}
+
+.dwst-mlog__code {
+  color: var(--dwst-color-pink);
+}
+
+.dwst-mlog__strong {
+  color: var(--dwst-color-pink);
+  font-weight: bold;
+}
+
+.dwst-mlog__h1 {
+  color: var(--dwst-color-white);
+  font-weight: bold;
+}
+
+.dwst-mlog__h2 {
+  color: var(--dwst-color-white);
+  text-transform: uppercase;
+}
+
+.dwst-mlog__link {
+  color: var(--dwst-color-blue);
+}
+
+.dwst-mlog__syntax {
+  font-style: italic;
+  text-indent: -2ch;
+  margin-left: 2ch;
+  display: inline-block;
+}
+
+/**
+
+  Authors: Toni Ruottu, Finland 2010-2017
+
+  This file is part of Dark WebSocket Terminal.
+
+  CC0 1.0 Universal, http://creativecommons.org/publicdomain/zero/1.0/
+
+  To the extent possible under law, Dark WebSocket Terminal developers have waived all
+  copyright and related or neighboring rights to Dark WebSocket Terminal.
+
+*/
+
+.dwst-notification {
   height: var(--dwst-bar-height);
   line-height: var(--dwst-bar-height);
   text-align: center;
@@ -631,4 +745,107 @@ input[type="text"] {
 
 .dwst-notification__link {
   color: #fff;
+}
+
+/**
+
+  Authors: Toni Ruottu, Finland 2010-2017
+
+  This file is part of Dark WebSocket Terminal.
+
+  CC0 1.0 Universal, http://creativecommons.org/publicdomain/zero/1.0/
+
+  To the extent possible under law, Dark WebSocket Terminal developers have waived all
+  copyright and related or neighboring rights to Dark WebSocket Terminal.
+
+*/
+
+.dwst-prompt {
+  width: 100%;
+  height: var(--dwst-bar-height);
+  position: relative;
+}
+
+.dwst-prompt__input {
+  vertical-align: middle;
+  width: calc(100% - var(--dwst-bar-height));
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  left: 0;
+}
+
+.dwst-prompt__button {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+}
+
+/**
+
+  Authors: Toni Ruottu, Finland 2010-2017
+
+  This file is part of Dark WebSocket Terminal.
+
+  CC0 1.0 Universal, http://creativecommons.org/publicdomain/zero/1.0/
+
+  To the extent possible under law, Dark WebSocket Terminal developers have waived all
+  copyright and related or neighboring rights to Dark WebSocket Terminal.
+
+*/
+
+.dwst-scroll-area {
+  overflow: hidden;
+  overflow-y: scroll;
+  vertical-align: top;
+}
+
+.dwst-scroll-area__content {
+  min-height: 100%;
+}
+
+/**
+
+  Authors: Toni Ruottu, Finland 2010-2017
+
+  This file is part of Dark WebSocket Terminal.
+
+  CC0 1.0 Universal, http://creativecommons.org/publicdomain/zero/1.0/
+
+  To the extent possible under law, Dark WebSocket Terminal developers have waived all
+  copyright and related or neighboring rights to Dark WebSocket Terminal.
+
+*/
+
+.dwst-text-input {
+  width: 100%;
+  height: 100%;
+  background-color: var(--dwst-color-gray-1);
+  color: var(--dwst-color-white);
+  font-family: monospace;
+  border-width: 0;
+  outline: none;
+  box-sizing: border-box;
+}
+
+/**
+
+  Authors: Toni Ruottu, Finland 2010-2017
+
+  This file is part of Dark WebSocket Terminal.
+
+  CC0 1.0 Universal, http://creativecommons.org/publicdomain/zero/1.0/
+
+  To the extent possible under law, Dark WebSocket Terminal developers have waived all
+  copyright and related or neighboring rights to Dark WebSocket Terminal.
+
+*/
+
+.dwst-time--bright {
+  color: var(--dwst-color-gray-d);
+}
+
+.dwst-time__sec {
+  color: var(--dwst-color-gray-7);
 }

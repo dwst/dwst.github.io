@@ -60,7 +60,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 2);
+/******/ 	return __webpack_require__(__webpack_require__.s = 3);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -97,7 +97,7 @@ exports.default = {
     return num;
   },
 
-  divissimo: function divissimo(l, n) {
+  chunkify: function chunkify(l, n) {
     var chunks = [];
     var chunk = [];
     var i = 0;
@@ -166,6 +166,333 @@ exports.default = {
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+
+var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
+
+exports.parseParticles = parseParticles;
+exports.escapeForParticles = escapeForParticles;
+exports.default = particles;
+
+function _toArray(arr) { return Array.isArray(arr) ? arr : Array.from(arr); }
+
+/**
+
+  Authors: Toni Ruottu, Finland 2017
+           Lauri Kaitala, Finland 2017
+
+  This file is part of Dark WebSocket Terminal.
+
+  CC0 1.0 Universal, http://creativecommons.org/publicdomain/zero/1.0/
+
+  To the extent possible under law, Dark WebSocket Terminal developers have waived all
+  copyright and related or neighboring rights to Dark WebSocket Terminal.
+
+*/
+
+// DWST particles templating language
+
+var specialChars = ['$', '\\'];
+
+function extractEscapedChar(remainder1) {
+  var remainder2 = remainder1.slice(1);
+  if (remainder2 === '') {
+    var msg = 'syntax error: looks like your last character is an escape. ';
+    // TODO - what if it is the only character?
+    throw new Error(msg);
+  }
+  var escapedChar = remainder2.charAt(0);
+  var escapedIsSpecial = false;
+  specialChars.forEach(function (character) {
+    if (character === escapedChar) {
+      escapedIsSpecial = true;
+    }
+  });
+  if (escapedIsSpecial === false) {
+    var _msg = 'syntax error: don\'t escape normal characters. ';
+    throw new Error(_msg);
+  }
+  var remainder = remainder2.slice(1);
+  return [escapedChar, remainder];
+}
+
+function getNextSpecialCharPosition(remainder1) {
+  return specialChars.map(function (character) {
+    var i = remainder1.indexOf(character);
+    if (i < 0) {
+      return 0;
+    }
+    return i;
+  }).sort(function (a, b) {
+    return a - b;
+  }).filter(function (i) {
+    return i > 0;
+  })[0];
+}
+
+function readDefaultParticleContent(remainder1) {
+  var content = '';
+  var escapedChar = void 0;
+  var remainder2 = remainder1;
+  while (remainder2.length > 0) {
+    if (remainder2.charAt(0) === '$') {
+      break;
+    }
+    if (remainder2.charAt(0) === '\\') {
+      var _extractEscapedChar = extractEscapedChar(remainder2);
+
+      var _extractEscapedChar2 = _slicedToArray(_extractEscapedChar, 2);
+
+      escapedChar = _extractEscapedChar2[0];
+      remainder2 = _extractEscapedChar2[1];
+
+      content += escapedChar;
+    }
+    var nextSpecialPos = getNextSpecialCharPosition(remainder2);
+    var sliceIndex = void 0;
+    if (typeof nextSpecialPos === 'undefined') {
+      sliceIndex = remainder2.length;
+    } else {
+      sliceIndex = nextSpecialPos;
+    }
+    content += remainder2.slice(0, sliceIndex);
+    remainder2 = remainder2.slice(sliceIndex);
+  }
+  return [content, remainder2];
+}
+
+function skipExpressionOpen(remainder1) {
+  var expressionOpen = '${';
+  if (remainder1.startsWith(expressionOpen) === false) {
+    var msg = 'expression needs to start with ' + expressionOpen;
+    throw new Error(msg);
+  }
+  var remainder = remainder1.slice(expressionOpen.length);
+  return remainder;
+}
+
+function skipExpressionClose(remainder1) {
+  var expressionClose = '}';
+  if (remainder1.startsWith(expressionClose) === false) {
+    var msg = 'expression needs to end with ' + expressionClose;
+    throw new Error(msg);
+  }
+  var remainder = remainder1.slice(expressionClose.length);
+  return remainder;
+}
+
+function skipArgListOpen(remainder1) {
+  var argListOpen = '(';
+  var remainder = remainder1.slice(argListOpen.length);
+  return remainder;
+}
+
+function skipArgSeparator(remainder1) {
+  var argSeparator = ',';
+  var remainder = remainder1.slice(argSeparator.length);
+  return remainder;
+}
+
+function skipArgListClose(remainder1) {
+  var argListClose = ')';
+  var remainder = remainder1.slice(argListClose.length);
+  return remainder;
+}
+
+function readInstructionName(remainder1) {
+  var argListOpenIndex = remainder1.indexOf('(');
+  if (argListOpenIndex === 0) {
+    var msg = 'broken named particle: missing instruction name, remainder = ' + remainder1;
+    throw new Error(msg);
+  }
+  var sliceIndex = void 0;
+  if (argListOpenIndex === -1) {
+    sliceIndex = remainder.length;
+  } else {
+    sliceIndex = argListOpenIndex;
+  }
+  var instructionName = remainder1.slice(0, sliceIndex);
+  var remainder = remainder1.slice(sliceIndex);
+  return [instructionName, remainder];
+}
+
+function readInstructionArg(remainder1) {
+  var argSeparatorIndex = remainder1.indexOf(',');
+  if (argSeparatorIndex === 0) {
+    var msg = 'broken particle argument: missing argument, remainder = ' + remainder1;
+    throw new Error(msg);
+  }
+  var sliceIndex = void 0;
+  if (argSeparatorIndex === -1) {
+    var argListCloseIndex = remainder1.indexOf(')');
+    if (argListCloseIndex === -1) {
+      var _msg2 = 'Expected \' or ), remainder = ' + remainder1;
+      throw new Error(_msg2);
+    }
+    sliceIndex = argListCloseIndex;
+  } else {
+    sliceIndex = argSeparatorIndex;
+  }
+  var arg = remainder1.slice(0, sliceIndex);
+  if (arg.indexOf(' ') > -1) {
+    var _msg3 = 'syntax error: whitespace in instruction args';
+    throw new Error(_msg3);
+  }
+  var remainder = remainder1.slice(sliceIndex);
+  return [arg, remainder];
+}
+
+function readInstructionArgs(remainder1) {
+  if (remainder1.charAt(0) === ',') {
+    throw new Error('Unexpected comma.');
+  }
+  var instructionArgs = [];
+  var tmp = remainder1;
+  while (tmp.charAt(0) !== ')') {
+    if (tmp.charAt(0) === ',') {
+      tmp = skipArgSeparator(tmp);
+    }
+
+    var _readInstructionArg = readInstructionArg(tmp),
+        _readInstructionArg2 = _slicedToArray(_readInstructionArg, 2),
+        arg = _readInstructionArg2[0],
+        remainder2 = _readInstructionArg2[1];
+
+    instructionArgs.push(arg);
+    tmp = remainder2;
+  }
+  var remainder = tmp;
+  return [instructionArgs, remainder];
+}
+
+function parseExpression(remainder1) {
+  var _readInstructionName = readInstructionName(remainder1),
+      _readInstructionName2 = _slicedToArray(_readInstructionName, 2),
+      instructionName = _readInstructionName2[0],
+      remainder2 = _readInstructionName2[1];
+
+  var remainder3 = skipArgListOpen(remainder2);
+
+  var _readInstructionArgs = readInstructionArgs(remainder3),
+      _readInstructionArgs2 = _slicedToArray(_readInstructionArgs, 2),
+      instructionArgs = _readInstructionArgs2[0],
+      remainder4 = _readInstructionArgs2[1];
+
+  var remainder = skipArgListClose(remainder4);
+  var particle = [instructionName].concat(instructionArgs);
+  return [particle, remainder];
+}
+
+function readInstructionParticle(remainder1) {
+  var remainder2 = skipExpressionOpen(remainder1);
+
+  var _parseExpression = parseExpression(remainder2),
+      _parseExpression2 = _slicedToArray(_parseExpression, 2),
+      particle = _parseExpression2[0],
+      remainder3 = _parseExpression2[1];
+
+  var remainder = skipExpressionClose(remainder3);
+  return [particle, remainder];
+}
+
+function readDefaultParticle(remainder1) {
+  var _readDefaultParticleC = readDefaultParticleContent(remainder1),
+      _readDefaultParticleC2 = _slicedToArray(_readDefaultParticleC, 2),
+      content = _readDefaultParticleC2[0],
+      remainder = _readDefaultParticleC2[1];
+
+  var particle = ['default', content];
+  return [particle, remainder];
+}
+
+function readParticle(particleString) {
+  if (particleString.charAt(0) === '$') {
+    return readInstructionParticle(particleString);
+  }
+  return readDefaultParticle(particleString);
+}
+
+function parseParticles(particleString) {
+  var parsedParticles = [];
+  var tmp = particleString;
+  while (tmp.length > 0) {
+    var _readParticle = readParticle(tmp),
+        _readParticle2 = _slicedToArray(_readParticle, 2),
+        particle = _readParticle2[0],
+        remainder = _readParticle2[1];
+
+    parsedParticles.push(particle);
+    tmp = remainder;
+  }
+  return parsedParticles;
+}
+
+function escapeForParticles(textString) {
+  var replmap = [['$', '\\$'], ['\\', '\\\\']];
+
+  function replacer(str, rm) {
+    if (rm.length < 1) {
+      return str;
+    }
+    var head = rm[0];
+    var find = head[0];
+    var rep = head[1];
+
+    var parts = str.split(find);
+    var complete = [];
+    var _iteratorNormalCompletion = true;
+    var _didIteratorError = false;
+    var _iteratorError = undefined;
+
+    try {
+      for (var _iterator = parts[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+        var part = _step.value;
+
+        var loput = rm.slice(1);
+        var news = replacer(part, loput);
+        complete.push(news);
+      }
+    } catch (err) {
+      _didIteratorError = true;
+      _iteratorError = err;
+    } finally {
+      try {
+        if (!_iteratorNormalCompletion && _iterator.return) {
+          _iterator.return();
+        }
+      } finally {
+        if (_didIteratorError) {
+          throw _iteratorError;
+        }
+      }
+    }
+
+    var out = complete.join(rep);
+    return out;
+  }
+  var complete = replacer(textString, replmap);
+  return complete;
+}
+
+function particles(paramString, processFunction, joinFunction) {
+  return joinFunction(parseParticles(paramString).map(function (particle) {
+    var _particle = _toArray(particle),
+        instruction = _particle[0],
+        args = _particle.slice(1);
+
+    return processFunction(instruction, args);
+  }));
+}
+
+/***/ }),
+/* 2 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 exports.default = currenttime;
 
 /**
@@ -189,90 +516,94 @@ function currenttime() {
     return String(i);
   };
   var date = new Date();
-  var time = addzero(date.getHours()) + ":" + addzero(date.getMinutes()) + "<span class=\"sec\">:" + addzero(date.getSeconds()) + "</span>";
+  var time = addzero(date.getHours()) + ":" + addzero(date.getMinutes()) + "<span class=\"dwst-time__sec\">:" + addzero(date.getSeconds()) + "</span>";
   return time;
 }
 
 /***/ }),
-/* 2 */
+/* 3 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var _currenttime = __webpack_require__(1);
+var _particles = __webpack_require__(1);
+
+var _currenttime = __webpack_require__(2);
 
 var _currenttime2 = _interopRequireDefault(_currenttime);
 
-var _history_manager = __webpack_require__(3);
+var _history_manager = __webpack_require__(4);
 
 var _history_manager2 = _interopRequireDefault(_history_manager);
 
-var _terminal = __webpack_require__(4);
+var _terminal = __webpack_require__(5);
 
 var _terminal2 = _interopRequireDefault(_terminal);
 
-var _binary = __webpack_require__(5);
+var _binary = __webpack_require__(6);
 
 var _binary2 = _interopRequireDefault(_binary);
 
-var _bins = __webpack_require__(6);
+var _bins = __webpack_require__(7);
 
 var _bins2 = _interopRequireDefault(_bins);
 
-var _clear = __webpack_require__(7);
+var _clear = __webpack_require__(8);
 
 var _clear2 = _interopRequireDefault(_clear);
 
-var _connect = __webpack_require__(8);
+var _connect = __webpack_require__(9);
 
 var _connect2 = _interopRequireDefault(_connect);
 
-var _disconnect = __webpack_require__(10);
+var _disconnect = __webpack_require__(11);
 
 var _disconnect2 = _interopRequireDefault(_disconnect);
 
-var _forget = __webpack_require__(11);
+var _forget = __webpack_require__(12);
 
 var _forget2 = _interopRequireDefault(_forget);
 
-var _help = __webpack_require__(12);
+var _help = __webpack_require__(13);
 
 var _help2 = _interopRequireDefault(_help);
 
-var _interval = __webpack_require__(13);
+var _interval = __webpack_require__(14);
 
 var _interval2 = _interopRequireDefault(_interval);
 
-var _loadbin = __webpack_require__(14);
+var _loadbin = __webpack_require__(15);
 
 var _loadbin2 = _interopRequireDefault(_loadbin);
 
-var _loadtext = __webpack_require__(15);
+var _loadtext = __webpack_require__(16);
 
 var _loadtext2 = _interopRequireDefault(_loadtext);
 
-var _reset = __webpack_require__(16);
+var _reset = __webpack_require__(17);
 
 var _reset2 = _interopRequireDefault(_reset);
 
-var _send = __webpack_require__(17);
+var _send = __webpack_require__(18);
 
 var _send2 = _interopRequireDefault(_send);
 
-var _spam = __webpack_require__(18);
+var _spam = __webpack_require__(19);
 
 var _spam2 = _interopRequireDefault(_spam);
 
-var _splash = __webpack_require__(19);
+var _splash = __webpack_require__(20);
 
 var _splash2 = _interopRequireDefault(_splash);
 
-var _texts = __webpack_require__(20);
+var _texts = __webpack_require__(21);
 
 var _texts2 = _interopRequireDefault(_texts);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _toArray(arr) { return Array.isArray(arr) ? arr : Array.from(arr); }
 
 function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 /**
@@ -286,19 +617,6 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
 
   To the extent possible under law, Dark WebSocket Terminal developers have waived all
   copyright and related or neighboring rights to Dark WebSocket Terminal.
-
-*/
-
-/*
-Dark WebSocket Terminal
-
-CC0, http://creativecommons.org/publicdomain/zero/1.0/
-
-To the extent possible under law, Dark WebSocket Terminal developers have waived all copyright and related or neighboring rights to Dark WebSocket Terminal.
-
-Dark WebSocket Terminal developers:
-Toni Ruottu <toni.ruottu@iki.fi>, Finland 2010-2017
-William Orr <will@worrbase.com>, US 2012
 
 */
 
@@ -326,6 +644,9 @@ var controller = {
       return ['Selected protocol: ' + protocol];
     }();
     terminal.mlog(['Connection established.'].concat(selected), 'system');
+    [].concat(_toConsumableArray(document.getElementsByClassName('dwst-button--splash'))).forEach(function (element) {
+      element.classList.replace('dwst-button--splash', 'dwst-button--splash-connected');
+    });
   },
 
   onConnectionClose: function onConnectionClose(e, sessionLength) {
@@ -363,6 +684,9 @@ var controller = {
     }();
     terminal.mlog(['Connection closed.', 'Close status: ' + code].concat(reason).concat(sessionLengthString), 'system');
     pluginInterface.connection = null;
+    [].concat(_toConsumableArray(document.getElementsByClassName('dwst-button--splash-connected'))).forEach(function (element) {
+      element.classList.replace('dwst-button--splash-connected', 'dwst-button--splash');
+    });
   },
 
   onMessage: function onMessage(msg) {
@@ -392,7 +716,7 @@ var terminal = new _terminal2.default('ter1', controller);
 
 var pluginInterface = {
 
-  VERSION: '2.3.0',
+  VERSION: '2.4.0',
   ECHO_SERVER_URL: 'wss://echo.websocket.org/',
 
   terminal: terminal,
@@ -417,27 +741,27 @@ try {
     var Constructor = _step.value;
 
     var plugin = new Constructor(pluginInterface);
-    var _iteratorNormalCompletion3 = true;
-    var _didIteratorError3 = false;
-    var _iteratorError3 = undefined;
+    var _iteratorNormalCompletion2 = true;
+    var _didIteratorError2 = false;
+    var _iteratorError2 = undefined;
 
     try {
-      for (var _iterator3 = plugin.commands()[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
-        var command = _step3.value;
+      for (var _iterator2 = plugin.commands()[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+        var command = _step2.value;
 
         pluginInterface.commands.set(command, plugin);
       }
     } catch (err) {
-      _didIteratorError3 = true;
-      _iteratorError3 = err;
+      _didIteratorError2 = true;
+      _iteratorError2 = err;
     } finally {
       try {
-        if (!_iteratorNormalCompletion3 && _iterator3.return) {
-          _iterator3.return();
+        if (!_iteratorNormalCompletion2 && _iterator2.return) {
+          _iterator2.return();
         }
       } finally {
-        if (_didIteratorError3) {
-          throw _iteratorError3;
+        if (_didIteratorError2) {
+          throw _iteratorError2;
         }
       }
     }
@@ -457,47 +781,17 @@ try {
   }
 }
 
-function process(plugin, rawParam) {
-  var pro = plugin.process;
-  var param = rawParam;
-  /* eslint-disable prefer-template */
-  if (param.substr(param.length - 2, 2) === '\\\\') {
-    param = param.substr(0, param.length - 2) + '\\';
-  } else if (param.substr(param.length - 1, 1) === '\\') {
-    param = param.substr(0, param.length - 1) + ' ';
-  }
-  /* eslint-enable prefer-template */
-  if (typeof pro === 'undefined') {
-    return param;
-  }
-  var instruction = 'default';
-  var params = [];
-  var end = '';
-  if (param.substr(0, 2) === '\\\\') {
-    params.push(param.substr(1));
-  } else if (param.substr(0, 2) === '\\[') {
-    params.push(param.substr(1));
-  } else if (param.substr(0, 1) === '[') {
-    var tmp = param.split(']');
-    var call = tmp[0].split('[')[1];
-    end = tmp[1];
-    var tmp2 = call.split('(').concat('');
-    instruction = tmp2[0];
-    var pl = tmp2[1].split(')')[0];
-    if (pl.length > 0) {
-      params = pl.split(',');
-    }
-  } else {
-    params.push(param);
-  }
-  return pro(instruction, params, end);
-}
-
 function run(command) {
+  var _command$split = command.split(' '),
+      _command$split2 = _toArray(_command$split),
+      pluginName = _command$split2[0],
+      params = _command$split2.slice(1);
 
-  var plugin = pluginInterface.commands.get(command);
+  var paramString = params.join(' ');
+
+  var plugin = pluginInterface.commands.get(pluginName);
   if (typeof plugin === 'undefined') {
-    var errorMessage = 'invalid command: ' + command;
+    var errorMessage = 'invalid command: ' + pluginName;
     var helpTip = ['type ', {
       type: 'command',
       text: '/help'
@@ -505,15 +799,7 @@ function run(command) {
     terminal.mlog([errorMessage, helpTip], 'error');
     return;
   }
-
-  for (var _len = arguments.length, params = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
-    params[_key - 1] = arguments[_key];
-  }
-
-  var processed = params.map(function (param) {
-    return process(plugin, param);
-  });
-  plugin.run.apply(plugin, _toConsumableArray(processed));
+  plugin.run(paramString);
 }
 
 function refreshclock() {
@@ -523,8 +809,7 @@ function refreshclock() {
 
 function silent(line) {
   var noslash = line.substring(1);
-  var parts = noslash.split(' ');
-  run.apply(undefined, _toConsumableArray(parts));
+  run(noslash);
 }
 
 function loud(line) {
@@ -532,79 +817,37 @@ function loud(line) {
   silent(line);
 }
 
+function enableDebugger() {
+  document.documentElement.className += ' dwst-debug';
+}
+
+function showHelpTip() {
+  var helpTip = ['type ', {
+    type: 'command',
+    text: '/help'
+  }, ' to list available commands'];
+  terminal.log(helpTip, 'system');
+}
+
 function send() {
   var raw = document.getElementById('msg1').value;
+  document.getElementById('msg1').value = '';
+  pluginInterface.historyManager.select(raw);
   if (raw === '/idkfa') {
-    // dwst debugger
-    document.documentElement.className += ' dwst-debug';
+    enableDebugger();
     return;
   }
-  pluginInterface.historyManager.select(raw);
-  document.getElementById('msg1').value = '';
   if (raw.length < 1) {
-    var helpTip = ['type ', {
-      type: 'command',
-      text: '/help'
-    }, ' to list available commands'];
-    terminal.log(helpTip, 'system');
+    showHelpTip();
     return;
   }
   if (raw[0] === '/') {
     loud(raw);
     return;
   }
-  var replmap = [[' [', '\\ \\['], [' ', '\\ ']];
-
-  function replacer(str, rm) {
-    if (rm.length < 1) {
-      return str;
-    }
-    var head = rm[0];
-    var find = head[0];
-    var rep = head[1];
-
-    var parts = str.split(find);
-    var complete = [];
-    var _iteratorNormalCompletion2 = true;
-    var _didIteratorError2 = false;
-    var _iteratorError2 = undefined;
-
-    try {
-      for (var _iterator2 = parts[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-        var part = _step2.value;
-
-        var loput = rm.slice(1);
-        var news = replacer(part, loput);
-        complete.push(news);
-      }
-    } catch (err) {
-      _didIteratorError2 = true;
-      _iteratorError2 = err;
-    } finally {
-      try {
-        if (!_iteratorNormalCompletion2 && _iterator2.return) {
-          _iterator2.return();
-        }
-      } finally {
-        if (_didIteratorError2) {
-          throw _iteratorError2;
-        }
-      }
-    }
-
-    var out = complete.join(rep);
-    return out;
-  }
-  var almost = replacer(raw, replmap);
-  var final = void 0;
-  if (almost[0] === '[') {
-    final = '\\' + almost;
-  } else {
-    final = almost;
-  }
-  var command = '/send ' + final;
+  var text = (0, _particles.escapeForParticles)(raw);
+  var command = '/send ' + text;
   loud(command);
-  return;
 }
 
 function globalKeyPress(event) {
@@ -698,7 +941,7 @@ window.addEventListener('load', function () {
 });
 
 /***/ }),
-/* 3 */
+/* 4 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -943,7 +1186,7 @@ var HistoryManager = function () {
 exports.default = HistoryManager;
 
 /***/ }),
-/* 4 */
+/* 5 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -973,7 +1216,7 @@ var _utils = __webpack_require__(0);
 
 var _utils2 = _interopRequireDefault(_utils);
 
-var _currenttime = __webpack_require__(1);
+var _currenttime = __webpack_require__(2);
 
 var _currenttime2 = _interopRequireDefault(_currenttime);
 
@@ -1110,7 +1353,7 @@ var Terminal = function () {
     key: 'clearLog',
     value: function clearLog() {
       var logClear = document.createElement('div');
-      logClear.setAttribute('class', 'dwst-logclear');
+      logClear.setAttribute('class', 'dwst-log__clear');
       this.addLogLine(logClear);
     }
   }, {
@@ -1133,7 +1376,7 @@ var Terminal = function () {
       });
 
       var gfxContainer = document.createElement('div');
-      gfxContainer.setAttribute('class', 'dwst-gfx');
+      gfxContainer.setAttribute('class', 'dwst-log__item dwst-log__item--gfx dwst-gfx');
       gfxContainer.setAttribute('aria-hidden', 'true');
       gfxContainer.appendChild(gfxContent);
 
@@ -1234,13 +1477,13 @@ var Terminal = function () {
               return _link;
             }
             if (segment.type === 'hexline') {
-              var hexChunks = _utils2.default.divissimo(segment.hexes, 4);
-              var textChunks = _utils2.default.divissimo(rawText, 4);
+              var hexChunks = _utils2.default.chunkify(segment.hexes, 4);
+              var textChunks = _utils2.default.chunkify(rawText, 4);
 
               var byteGrid = document.createElement('div');
-              var byteGridClasses = ['dwst-bytegrid'];
+              var byteGridClasses = ['dwst-byte-grid'];
               if (hexChunks.length < 3) {
-                byteGridClasses.push('dwst-bytegrid--less-than-three');
+                byteGridClasses.push('dwst-byte-grid--less-than-three');
               }
               byteGrid.setAttribute('class', byteGridClasses.join(' '));
 
@@ -1257,13 +1500,13 @@ var Terminal = function () {
 
                 var hexContent = _this._htmlescape(hexChunk.join(' '));
                 var hexItem = document.createElement('div');
-                hexItem.setAttribute('class', 'dwst-bytegrid__item');
+                hexItem.setAttribute('class', 'dwst-byte-grid__item');
                 hexItem.innerHTML = hexContent;
                 byteGrid.appendChild(hexItem);
 
                 var textContent = _this._htmlescape(textChunk.join('').padEnd(chunkLength));
                 var textItem = document.createElement('div');
-                textItem.setAttribute('class', 'dwst-bytegrid__item');
+                textItem.setAttribute('class', 'dwst-byte-grid__item');
                 textItem.innerHTML = textContent;
                 byteGrid.appendChild(textItem);
               });
@@ -1319,15 +1562,16 @@ var Terminal = function () {
       });
       var time = (0, _currenttime2.default)();
       var logLine = document.createElement('div');
-      logLine.setAttribute('class', 'dwst-logline dwst-logline--' + type);
-      logLine.innerHTML = '<span class="dwst-logline__item time">' + time + '</span><span class="dwst-logline__item dwst-direction dwst-direction--' + type + '">' + type + ':</span>';
+      logLine.setAttribute('class', 'dwst-log__item dwst-log__item--' + type + ' dwst-log-entry');
+      logLine.innerHTML = '<span class="dwst-log-entry__time dwst-time">' + time + '</span><span class="dwst-log-entry__direction dwst-direction dwst-direction--' + type + '">' + type + ':</span>';
       var outputCell = document.createElement('span');
-      outputCell.setAttribute('class', 'dwst-logline__item dwst-logline__item--main preserved');
+      outputCell.setAttribute('class', 'dwst-log-entry__content dwst-mlog');
       lineElements.forEach(function (lineElement) {
         lineElement.forEach(function (segmentElement) {
           outputCell.appendChild(segmentElement);
         });
         var br = document.createElement('br');
+        br.setAttribute('class', 'dwst-mlog__br');
         outputCell.appendChild(br);
       });
       logLine.appendChild(outputCell);
@@ -1360,7 +1604,7 @@ var Terminal = function () {
 exports.default = Terminal;
 
 /***/ }),
-/* 5 */
+/* 6 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1388,6 +1632,10 @@ var _utils = __webpack_require__(0);
 
 var _utils2 = _interopRequireDefault(_utils);
 
+var _particles = __webpack_require__(1);
+
+var _particles2 = _interopRequireDefault(_particles);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
@@ -1409,12 +1657,12 @@ var Binary = function () {
   }, {
     key: 'usage',
     value: function usage() {
-      return ['/binary [components...]', '/b [components...]'];
+      return ['/binary [template]', '/b [template]'];
     }
   }, {
     key: 'examples',
     value: function examples() {
-      return ['/binary Hello\\ world!', '/binary [random(16)]', '/binary [text]', '/binary [bin]', '/binary \\["JSON","is","cool"]', '/binary [range(0,0xff)]', '/binary [hex(1234567890abcdef)]', '/binary [hex(52)] [random(1)] lol', '/b Available\\ now\\ with\\ ~71.43%\\ less\\ typing!'];
+      return ['/binary Hello world!', '/binary ${random(16)}', '/binary ${text()}', '/binary ${bin()}', '/binary ["JSON","is","cool"]', '/binary ${range(0,0xff)}', '/binary ${hex(1234567890abcdef)}', '/binary ${hex(52)}${random(1)}lol', '/b Available now with ~71.43% less typing!'];
     }
   }, {
     key: 'info',
@@ -1422,8 +1670,8 @@ var Binary = function () {
       return 'send binary data';
     }
   }, {
-    key: 'process',
-    value: function process(instr, params) {
+    key: '_process',
+    value: function _process(instr, params) {
       function byteValue(x) {
         var code = x.charCodeAt(0);
         if (code !== (code & 0xff)) {
@@ -1500,7 +1748,7 @@ var Binary = function () {
         if (params.length === 1) {
           var hex = params[0];
           var nums = hex.split('');
-          var pairs = _utils2.default.divissimo(nums, 2);
+          var pairs = _utils2.default.chunkify(nums, 2);
           var tmp = pairs.map(hexpairtobyte);
           bytes = tmp.filter(function (b) {
             return b !== null;
@@ -1513,9 +1761,10 @@ var Binary = function () {
     }
   }, {
     key: 'run',
-    value: function run() {
-      function joinbufs(buffersToJoin) {
+    value: function run(paramString) {
+      var _this = this;
 
+      function joinBuffers(buffersToJoin) {
         var total = 0;
         var _iteratorNormalCompletion = true;
         var _didIteratorError = false;
@@ -1570,14 +1819,12 @@ var Binary = function () {
           }
         }
 
-        return out;
+        return out.buffer;
       }
+      var out = (0, _particles2.default)(paramString, function () {
+        return _this._process.apply(_this, arguments);
+      }, joinBuffers);
 
-      for (var _len = arguments.length, buffers = Array(_len), _key = 0; _key < _len; _key++) {
-        buffers[_key] = arguments[_key];
-      }
-
-      var out = joinbufs(buffers).buffer;
       var msg = '<' + out.byteLength + 'B of data> ';
       if (this._dwst.connection === null || this._dwst.connection.isClosing() || this._dwst.connection.isClosed()) {
         var connectTip = ['Use ', {
@@ -1599,7 +1846,7 @@ var Binary = function () {
 exports.default = Binary;
 
 /***/ }),
-/* 6 */
+/* 7 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1658,8 +1905,8 @@ var Bins = function () {
       return 'list loaded binaries';
     }
   }, {
-    key: 'run',
-    value: function run() {
+    key: '_run',
+    value: function _run() {
       var variable = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
 
       if (variable !== null) {
@@ -1685,6 +1932,16 @@ var Bins = function () {
       var strs = ['Loaded binaries:'].concat(listing);
       this._dwst.mlog(strs, 'system');
     }
+  }, {
+    key: 'run',
+    value: function run(paramString) {
+      if (paramString.length < 1) {
+        this._run();
+        return;
+      }
+      var params = paramString.split(' ');
+      this._run.apply(this, _toConsumableArray(params));
+    }
   }]);
 
   return Bins;
@@ -1693,7 +1950,7 @@ var Bins = function () {
 exports.default = Bins;
 
 /***/ }),
-/* 7 */
+/* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1760,7 +2017,7 @@ var Clear = function () {
 exports.default = Clear;
 
 /***/ }),
-/* 8 */
+/* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1788,7 +2045,7 @@ var _utils = __webpack_require__(0);
 
 var _utils2 = _interopRequireDefault(_utils);
 
-var _connection = __webpack_require__(9);
+var _connection = __webpack_require__(10);
 
 var _connection2 = _interopRequireDefault(_connection);
 
@@ -1826,8 +2083,8 @@ var Connect = function () {
       return 'connect to a server';
     }
   }, {
-    key: 'run',
-    value: function run(url) {
+    key: '_run',
+    value: function _run(url) {
       var _this = this;
 
       var protocolString = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
@@ -1836,7 +2093,7 @@ var Connect = function () {
         this._dwst.terminal.mlog(['Already connected to a server', ['Type ', {
           type: 'command',
           text: '/disconnect'
-        }, ' to end the conection']], 'error');
+        }, ' to end the connection']], 'error');
         return;
       }
       var protoCandidates = function () {
@@ -1891,6 +2148,16 @@ var Connect = function () {
       }();
       this._dwst.terminal.mlog(['Connecting to ' + this._dwst.connection.url].concat(negotiation), 'system');
     }
+  }, {
+    key: 'run',
+    value: function run(paramString) {
+      if (paramString.length < 1) {
+        this._run();
+        return;
+      }
+      var params = paramString.split(' ');
+      this._run.apply(this, _toConsumableArray(params));
+    }
   }]);
 
   return Connect;
@@ -1899,7 +2166,7 @@ var Connect = function () {
 exports.default = Connect;
 
 /***/ }),
-/* 9 */
+/* 10 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2105,7 +2372,7 @@ var Connection = function () {
 exports.default = Connection;
 
 /***/ }),
-/* 10 */
+/* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2177,7 +2444,7 @@ var Disconnect = function () {
 exports.default = Disconnect;
 
 /***/ }),
-/* 11 */
+/* 12 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2188,6 +2455,8 @@ Object.defineProperty(exports, "__esModule", {
 });
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -2239,8 +2508,8 @@ var Forget = function () {
       this._dwst.terminal.mlog(['Successfully forgot stored history!', historyLine], 'system');
     }
   }, {
-    key: 'run',
-    value: function run(target) {
+    key: '_run',
+    value: function _run(target) {
       if (target === 'everything') {
         this._removeHistory();
         this._dwst.terminal.log("You may wish to use your browser's cleaning features to remove tracking cookies and other remaining traces.", 'warning');
@@ -2248,6 +2517,16 @@ var Forget = function () {
         var historyLine = this._dwst.historyManager.getSummary().concat(['.']);
         this._dwst.terminal.mlog(['Invalid argument: ' + target, historyLine], 'error');
       }
+    }
+  }, {
+    key: 'run',
+    value: function run(paramString) {
+      if (paramString.length < 1) {
+        this._run();
+        return;
+      }
+      var params = paramString.split(' ');
+      this._run.apply(this, _toConsumableArray(params));
     }
   }]);
 
@@ -2257,7 +2536,7 @@ var Forget = function () {
 exports.default = Forget;
 
 /***/ }),
-/* 12 */
+/* 13 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2554,8 +2833,8 @@ var Help = function () {
       }, '']).concat(examples).concat(['']), 'system');
     }
   }, {
-    key: 'run',
-    value: function run() {
+    key: '_run',
+    value: function _run() {
       var parameter = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
 
 
@@ -2572,6 +2851,16 @@ var Help = function () {
       }
       this._commandHelp(section);
     }
+  }, {
+    key: 'run',
+    value: function run(paramString) {
+      if (paramString.length < 1) {
+        this._run();
+        return;
+      }
+      var params = paramString.split(' ');
+      this._run.apply(this, _toConsumableArray(params));
+    }
   }]);
 
   return Help;
@@ -2580,7 +2869,7 @@ var Help = function () {
 exports.default = Help;
 
 /***/ }),
-/* 13 */
+/* 14 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2610,6 +2899,8 @@ var _utils2 = _interopRequireDefault(_utils);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 var Interval = function () {
@@ -2632,7 +2923,7 @@ var Interval = function () {
   }, {
     key: 'examples',
     value: function examples() {
-      return ['/interval 1000', '/interval 1000 /binary [random(10)]', '/interval'];
+      return ['/interval 1000', '/interval 1000 /binary ${random(10)}', '/interval'];
     }
   }, {
     key: 'info',
@@ -2640,8 +2931,8 @@ var Interval = function () {
       return 'run an other command periodically';
     }
   }, {
-    key: 'run',
-    value: function run() {
+    key: '_run',
+    value: function _run() {
       var _this = this;
 
       for (var _len = arguments.length, commandParts = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
@@ -2683,6 +2974,16 @@ var Interval = function () {
       this._dwst.intervalId = setInterval(spammer, interval);
       this._dwst.terminal.log('interval set', 'system');
     }
+  }, {
+    key: 'run',
+    value: function run(paramString) {
+      if (paramString.length < 1) {
+        this._run();
+        return;
+      }
+      var params = paramString.split(' ');
+      this._run.apply(this, _toConsumableArray(params));
+    }
   }]);
 
   return Interval;
@@ -2691,7 +2992,7 @@ var Interval = function () {
 exports.default = Interval;
 
 /***/ }),
-/* 14 */
+/* 15 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2702,6 +3003,8 @@ Object.defineProperty(exports, "__esModule", {
 });
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -2746,10 +3049,11 @@ var Loadbin = function () {
       return 'load binary data from a file';
     }
   }, {
-    key: 'run',
-    value: function run() {
+    key: '_run',
+    value: function _run() {
       var variable = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 'default';
 
+      var that = this;
       var upload = document.getElementById('file1');
       upload.onchange = function () {
         var file = upload.files[0];
@@ -2758,12 +3062,22 @@ var Loadbin = function () {
         var reader = new FileReader();
         reader.onload = function (e2) {
           var buffer = e2.target.result;
-          this._dwst.bins.set(variable, buffer);
-          this._dwst.terminal.log('Binary file ' + file.fileName + ' (' + buffer.byteLength + 'B) loaded to "' + variable + '"', 'system');
+          that._dwst.bins.set(variable, buffer);
+          that._dwst.terminal.log('Binary file ' + file.fileName + ' (' + buffer.byteLength + 'B) loaded to "' + variable + '"', 'system');
         };
         reader.readAsArrayBuffer(file);
       };
       upload.click();
+    }
+  }, {
+    key: 'run',
+    value: function run(paramString) {
+      if (paramString.length < 1) {
+        this._run();
+        return;
+      }
+      var params = paramString.split(' ');
+      this._run.apply(this, _toConsumableArray(params));
     }
   }]);
 
@@ -2773,7 +3087,7 @@ var Loadbin = function () {
 exports.default = Loadbin;
 
 /***/ }),
-/* 15 */
+/* 16 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2784,6 +3098,8 @@ Object.defineProperty(exports, "__esModule", {
 });
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -2828,11 +3144,12 @@ var Loadtext = function () {
       return 'load text data from a file';
     }
   }, {
-    key: 'run',
-    value: function run() {
+    key: '_run',
+    value: function _run() {
       var variable = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 'default';
       var encoding = arguments[1];
 
+      var that = this;
       var upload = document.getElementById('file1');
       upload.onchange = function () {
         var file = upload.files[0];
@@ -2841,12 +3158,22 @@ var Loadtext = function () {
         var reader = new FileReader();
         reader.onload = function (e2) {
           var text = e2.target.result;
-          this._dwst.texts.set(variable, text);
-          this._dwst.terminal.log('Text file ' + file.fileName + ' (' + text.length + 'B) loaded to "' + variable + '"', 'system');
+          that._dwst.texts.set(variable, text);
+          that._dwst.terminal.log('Text file ' + file.fileName + ' (' + text.length + 'B) loaded to "' + variable + '"', 'system');
         };
         reader.readAsText(file, encoding);
       };
       upload.click();
+    }
+  }, {
+    key: 'run',
+    value: function run(paramString) {
+      if (paramString.length < 1) {
+        this._run();
+        return;
+      }
+      var params = paramString.split(' ');
+      this._run.apply(this, _toConsumableArray(params));
     }
   }]);
 
@@ -2856,7 +3183,7 @@ var Loadtext = function () {
 exports.default = Loadtext;
 
 /***/ }),
-/* 16 */
+/* 17 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2923,7 +3250,7 @@ var Reset = function () {
 exports.default = Reset;
 
 /***/ }),
-/* 17 */
+/* 18 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2951,6 +3278,10 @@ var _utils = __webpack_require__(0);
 
 var _utils2 = _interopRequireDefault(_utils);
 
+var _particles = __webpack_require__(1);
+
+var _particles2 = _interopRequireDefault(_particles);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -2970,12 +3301,12 @@ var Send = function () {
   }, {
     key: 'usage',
     value: function usage() {
-      return ['/send [components...]', '/s [components...]'];
+      return ['/send [template]', '/s [template]'];
     }
   }, {
     key: 'examples',
     value: function examples() {
-      return ['/send Hello\\ world!', '/send rpc( [random(5)] )', '/send [text]', '/send \\["JSON","is","cool"]', '/send [time] s\\ since\\ epoch', '/send From\\ a\\ to\\ z:\\ [range(97,122)]', '/s Available\\ now\\ with\\ 60%\\ less\\ typing!'];
+      return ['/send Hello world!', '/send rpc(${random(5)})', '/send ${text()}', '/send ["JSON","is","cool"]', '/send ${time()}s since epoch', '/send From a to z: ${range(97,122)}', '/s Available now with 60% less typing!'];
     }
   }, {
     key: 'info',
@@ -2983,8 +3314,8 @@ var Send = function () {
       return 'send textual data';
     }
   }, {
-    key: 'process',
-    value: function process(instr, params, postfix) {
+    key: '_process',
+    value: function _process(instr, params) {
       var out = void 0;
       if (instr === 'default') {
         out = params[0];
@@ -3032,16 +3363,19 @@ var Send = function () {
         }
         out = _str;
       }
-      return out + postfix;
+      return out;
     }
   }, {
     key: 'run',
-    value: function run() {
-      for (var _len = arguments.length, processed = Array(_len), _key = 0; _key < _len; _key++) {
-        processed[_key] = arguments[_key];
-      }
+    value: function run(paramString) {
+      var _this = this;
 
-      var msg = processed.join('');
+      function joinStrings(strings) {
+        return strings.join('');
+      }
+      var msg = (0, _particles2.default)(paramString, function () {
+        return _this._process.apply(_this, arguments);
+      }, joinStrings);
       if (this._dwst.connection === null || this._dwst.connection.isClosing() || this._dwst.connection.isClosed()) {
         var connectTip = ['Use ', {
           type: 'dwstgg',
@@ -3062,7 +3396,7 @@ var Send = function () {
 exports.default = Send;
 
 /***/ }),
-/* 18 */
+/* 19 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -3092,6 +3426,8 @@ var _utils2 = _interopRequireDefault(_utils);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 var Spam = function () {
@@ -3114,7 +3450,7 @@ var Spam = function () {
   }, {
     key: 'examples',
     value: function examples() {
-      return ['/spam 10', '/spam 6 /binary [random(10)]'];
+      return ['/spam 10', '/spam 6 /binary ${random(10)}'];
     }
   }, {
     key: 'info',
@@ -3122,8 +3458,8 @@ var Spam = function () {
       return 'run a command multiple times';
     }
   }, {
-    key: 'run',
-    value: function run(timesStr) {
+    key: '_run',
+    value: function _run(timesStr) {
       var _this = this;
 
       for (var _len = arguments.length, commandParts = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
@@ -3153,6 +3489,16 @@ var Spam = function () {
       };
       spam(times);
     }
+  }, {
+    key: 'run',
+    value: function run(paramString) {
+      if (paramString.length < 1) {
+        this._run();
+        return;
+      }
+      var params = paramString.split(' ');
+      this._run.apply(this, _toConsumableArray(params));
+    }
   }]);
 
   return Spam;
@@ -3161,7 +3507,7 @@ var Spam = function () {
 exports.default = Spam;
 
 /***/ }),
-/* 19 */
+/* 20 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -3369,7 +3715,7 @@ var Splash = function () {
 exports.default = Splash;
 
 /***/ }),
-/* 20 */
+/* 21 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -3428,8 +3774,8 @@ var Texts = function () {
       return 'list loaded texts';
     }
   }, {
-    key: 'run',
-    value: function run() {
+    key: '_run',
+    value: function _run() {
       var variable = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
 
       if (variable !== null) {
@@ -3453,6 +3799,16 @@ var Texts = function () {
       });
       var strs = ['Loaded texts:'].concat(listing);
       this._dwst.terminal.mlog(strs, 'system');
+    }
+  }, {
+    key: 'run',
+    value: function run(paramString) {
+      if (paramString.length < 1) {
+        this._run();
+        return;
+      }
+      var params = paramString.split(' ');
+      this._run.apply(this, _toConsumableArray(params));
     }
   }]);
 
