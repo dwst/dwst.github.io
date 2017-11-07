@@ -201,13 +201,7 @@ function extractEscapedChar(remainder1) {
     throw new Error(msg);
   }
   var escapedChar = remainder2.charAt(0);
-  var escapedIsSpecial = false;
-  specialChars.forEach(function (character) {
-    if (character === escapedChar) {
-      escapedIsSpecial = true;
-    }
-  });
-  if (escapedIsSpecial === false) {
+  if (specialChars.includes(escapedChar) === false) {
     var _msg = 'syntax error: don\'t escape normal characters. ';
     throw new Error(_msg);
   }
@@ -229,35 +223,41 @@ function getNextSpecialCharPosition(remainder1) {
   })[0];
 }
 
-function readDefaultParticleContent(remainder1) {
-  var content = '';
-  var escapedChar = void 0;
-  var remainder2 = remainder1;
-  while (remainder2.length > 0) {
-    if (remainder2.charAt(0) === '$') {
-      break;
-    }
-    if (remainder2.charAt(0) === '\\') {
-      var _extractEscapedChar = extractEscapedChar(remainder2);
-
-      var _extractEscapedChar2 = _slicedToArray(_extractEscapedChar, 2);
-
-      escapedChar = _extractEscapedChar2[0];
-      remainder2 = _extractEscapedChar2[1];
-
-      content += escapedChar;
-    }
-    var nextSpecialPos = getNextSpecialCharPosition(remainder2);
-    var sliceIndex = void 0;
-    if (typeof nextSpecialPos === 'undefined') {
-      sliceIndex = remainder2.length;
-    } else {
-      sliceIndex = nextSpecialPos;
-    }
-    content += remainder2.slice(0, sliceIndex);
-    remainder2 = remainder2.slice(sliceIndex);
+function extractRegularChars(remainder1) {
+  var nextSpecialPos = getNextSpecialCharPosition(remainder1);
+  var sliceIndex = void 0;
+  if (typeof nextSpecialPos === 'undefined') {
+    sliceIndex = remainder1.length;
+  } else {
+    sliceIndex = nextSpecialPos;
   }
-  return [content, remainder2];
+  var chars = remainder1.slice(0, sliceIndex);
+  var remainder = remainder1.slice(sliceIndex);
+  return [chars, remainder];
+}
+
+function readCharBlock(remainder1) {
+  if (remainder1.charAt(0) === '\\') {
+    return extractEscapedChar(remainder1);
+  }
+  return extractRegularChars(remainder1);
+}
+
+function readDefaultParticleContent(remainder1) {
+  var charBlocks = [];
+  var tmp = remainder1;
+  while (tmp.length > 0 && tmp.charAt(0) !== '$') {
+    var _readCharBlock = readCharBlock(tmp),
+        _readCharBlock2 = _slicedToArray(_readCharBlock, 2),
+        charBlock = _readCharBlock2[0],
+        blockRemainder = _readCharBlock2[1];
+
+    charBlocks.push(charBlock);
+    tmp = blockRemainder;
+  }
+  var content = charBlocks.join('');
+  var remainder = tmp;
+  return [content, remainder];
 }
 
 function skipExpressionOpen(remainder1) {
@@ -716,7 +716,7 @@ var terminal = new _terminal2.default('ter1', controller);
 
 var pluginInterface = {
 
-  VERSION: '2.4.0',
+  VERSION: '2.4.1',
   ECHO_SERVER_URL: 'wss://echo.websocket.org/',
 
   terminal: terminal,
