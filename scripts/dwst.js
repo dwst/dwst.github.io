@@ -171,9 +171,39 @@ var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = [
 
 exports.parseParticles = parseParticles;
 exports.escapeForParticles = escapeForParticles;
-exports.default = particles;
 
-function _toArray(arr) { return Array.isArray(arr) ? arr : Array.from(arr); }
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+function _extendableBuiltin(cls) {
+  function ExtendableBuiltin() {
+    var instance = Reflect.construct(cls, Array.from(arguments));
+    Object.setPrototypeOf(instance, Object.getPrototypeOf(this));
+    return instance;
+  }
+
+  ExtendableBuiltin.prototype = Object.create(cls.prototype, {
+    constructor: {
+      value: cls,
+      enumerable: false,
+      writable: true,
+      configurable: true
+    }
+  });
+
+  if (Object.setPrototypeOf) {
+    Object.setPrototypeOf(ExtendableBuiltin, cls);
+  } else {
+    ExtendableBuiltin.__proto__ = cls;
+  }
+
+  return ExtendableBuiltin;
+}
 
 /**
 
@@ -193,40 +223,58 @@ function _toArray(arr) { return Array.isArray(arr) ? arr : Array.from(arr); }
 
 var specialChars = ['$', '\\'];
 
+var InvalidParticles = exports.InvalidParticles = function (_extendableBuiltin2) {
+  _inherits(InvalidParticles, _extendableBuiltin2);
+
+  function InvalidParticles() {
+    _classCallCheck(this, InvalidParticles);
+
+    return _possibleConstructorReturn(this, (InvalidParticles.__proto__ || Object.getPrototypeOf(InvalidParticles)).apply(this, arguments));
+  }
+
+  return InvalidParticles;
+}(_extendableBuiltin(Error));
+
+function skipSpace(remainder1) {
+  var tmp = remainder1;
+  while (tmp.charAt(0) === ' ') {
+    tmp = tmp.slice(1);
+  }
+  var remainder = tmp;
+  return remainder;
+}
+
 function extractEscapedChar(remainder1) {
   var remainder2 = remainder1.slice(1);
   if (remainder2 === '') {
     var msg = 'syntax error: looks like your last character is an escape. ';
     // TODO - what if it is the only character?
-    throw new Error(msg);
+    throw new InvalidParticles(msg);
   }
   var escapedChar = remainder2.charAt(0);
   if (specialChars.includes(escapedChar) === false) {
     var _msg = 'syntax error: don\'t escape normal characters. ';
-    throw new Error(_msg);
+    throw new InvalidParticles(_msg);
   }
   var remainder = remainder2.slice(1);
   return [escapedChar, remainder];
 }
 
-function getNextSpecialCharPosition(remainder1) {
-  return specialChars.map(function (character) {
-    var i = remainder1.indexOf(character);
-    if (i < 0) {
-      return 0;
-    }
-    return i;
-  }).sort(function (a, b) {
-    return a - b;
-  }).filter(function (i) {
-    return i > 0;
-  })[0];
+function indexOfAny(inputString, chars) {
+  var indices = new Set(chars.map(function (character) {
+    return inputString.indexOf(character);
+  }));
+  indices.delete(-1);
+  if (indices.size === 0) {
+    return -1;
+  }
+  return Math.min.apply(Math, _toConsumableArray(indices));
 }
 
 function extractRegularChars(remainder1) {
-  var nextSpecialPos = getNextSpecialCharPosition(remainder1);
+  var nextSpecialPos = indexOfAny(remainder1, specialChars);
   var sliceIndex = void 0;
-  if (typeof nextSpecialPos === 'undefined') {
+  if (nextSpecialPos === -1) {
     sliceIndex = remainder1.length;
   } else {
     sliceIndex = nextSpecialPos;
@@ -264,7 +312,7 @@ function skipExpressionOpen(remainder1) {
   var expressionOpen = '${';
   if (remainder1.startsWith(expressionOpen) === false) {
     var msg = 'expression needs to start with ' + expressionOpen;
-    throw new Error(msg);
+    throw new InvalidParticles(msg);
   }
   var remainder = remainder1.slice(expressionOpen.length);
   return remainder;
@@ -274,7 +322,7 @@ function skipExpressionClose(remainder1) {
   var expressionClose = '}';
   if (remainder1.startsWith(expressionClose) === false) {
     var msg = 'expression needs to end with ' + expressionClose;
-    throw new Error(msg);
+    throw new InvalidParticles(msg);
   }
   var remainder = remainder1.slice(expressionClose.length);
   return remainder;
@@ -302,7 +350,11 @@ function readInstructionName(remainder1) {
   var argListOpenIndex = remainder1.indexOf('(');
   if (argListOpenIndex === 0) {
     var msg = 'broken named particle: missing instruction name, remainder = ' + remainder1;
-    throw new Error(msg);
+    throw new InvalidParticles(msg);
+  }
+  if (argListOpenIndex === -1) {
+    var _msg2 = 'broken named particle: missing arg list open, remainder = ' + remainder1;
+    throw new InvalidParticles(_msg2);
   }
   var sliceIndex = void 0;
   if (argListOpenIndex === -1) {
@@ -316,52 +368,46 @@ function readInstructionName(remainder1) {
 }
 
 function readInstructionArg(remainder1) {
-  var argSeparatorIndex = remainder1.indexOf(',');
-  if (argSeparatorIndex === 0) {
+  var nextBreakIndex = indexOfAny(remainder1, [' ', ',', ')']);
+  if (nextBreakIndex === 0) {
     var msg = 'broken particle argument: missing argument, remainder = ' + remainder1;
-    throw new Error(msg);
+    throw new InvalidParticles(msg);
   }
-  var sliceIndex = void 0;
-  if (argSeparatorIndex === -1) {
-    var argListCloseIndex = remainder1.indexOf(')');
-    if (argListCloseIndex === -1) {
-      var _msg2 = 'Expected \' or ), remainder = ' + remainder1;
-      throw new Error(_msg2);
-    }
-    sliceIndex = argListCloseIndex;
-  } else {
-    sliceIndex = argSeparatorIndex;
+  if (nextBreakIndex === -1) {
+    var _msg3 = 'Expected \' or ), remainder = ' + remainder1;
+    throw new InvalidParticles(_msg3);
   }
-  var arg = remainder1.slice(0, sliceIndex);
-  if (arg.indexOf(' ') > -1) {
-    var _msg3 = 'syntax error: whitespace in instruction args';
-    throw new Error(_msg3);
-  }
-  var remainder = remainder1.slice(sliceIndex);
+  var arg = remainder1.slice(0, nextBreakIndex);
+  var remainder = remainder1.slice(nextBreakIndex);
   return [arg, remainder];
 }
 
 function readInstructionArgs(remainder1) {
-  if (remainder1.charAt(0) === ',') {
-    throw new Error('Unexpected comma.');
-  }
   var instructionArgs = [];
+  if (remainder1.charAt(0) === ')') {
+    return [instructionArgs, remainder1];
+  }
   var tmp = remainder1;
-  while (tmp.charAt(0) !== ')') {
-    if (tmp.charAt(0) === ',') {
-      tmp = skipArgSeparator(tmp);
-    }
-
+  while (true) {
+    // eslint-disable-line
     var _readInstructionArg = readInstructionArg(tmp),
         _readInstructionArg2 = _slicedToArray(_readInstructionArg, 2),
         arg = _readInstructionArg2[0],
-        remainder2 = _readInstructionArg2[1];
+        instructionRemainder = _readInstructionArg2[1];
 
     instructionArgs.push(arg);
-    tmp = remainder2;
+    tmp = skipSpace(instructionRemainder);
+    if (tmp.charAt(0) === ')') {
+      var remainder = tmp;
+      return [instructionArgs, remainder];
+    }
+    if (tmp.charAt(0) !== ',') {
+      var msg = 'syntax error: garbage';
+      throw new InvalidParticles(msg);
+    }
+    tmp = skipArgSeparator(tmp);
+    tmp = skipSpace(tmp);
   }
-  var remainder = tmp;
-  return [instructionArgs, remainder];
 }
 
 function parseExpression(remainder1) {
@@ -371,26 +417,30 @@ function parseExpression(remainder1) {
       remainder2 = _readInstructionName2[1];
 
   var remainder3 = skipArgListOpen(remainder2);
+  var remainder4 = skipSpace(remainder3);
 
-  var _readInstructionArgs = readInstructionArgs(remainder3),
+  var _readInstructionArgs = readInstructionArgs(remainder4),
       _readInstructionArgs2 = _slicedToArray(_readInstructionArgs, 2),
       instructionArgs = _readInstructionArgs2[0],
-      remainder4 = _readInstructionArgs2[1];
+      remainder5 = _readInstructionArgs2[1];
 
-  var remainder = skipArgListClose(remainder4);
+  var remainder6 = skipSpace(remainder5);
+  var remainder = skipArgListClose(remainder6);
   var particle = [instructionName].concat(instructionArgs);
   return [particle, remainder];
 }
 
 function readInstructionParticle(remainder1) {
   var remainder2 = skipExpressionOpen(remainder1);
+  var remainder3 = skipSpace(remainder2);
 
-  var _parseExpression = parseExpression(remainder2),
+  var _parseExpression = parseExpression(remainder3),
       _parseExpression2 = _slicedToArray(_parseExpression, 2),
       particle = _parseExpression2[0],
-      remainder3 = _parseExpression2[1];
+      remainder4 = _parseExpression2[1];
 
-  var remainder = skipExpressionClose(remainder3);
+  var remainder5 = skipSpace(remainder4);
+  var remainder = skipExpressionClose(remainder5);
   return [particle, remainder];
 }
 
@@ -473,15 +523,7 @@ function escapeForParticles(textString) {
   return complete;
 }
 
-function particles(paramString, processFunction, joinFunction) {
-  return joinFunction(parseParticles(paramString).map(function (particle) {
-    var _particle = _toArray(particle),
-        instruction = _particle[0],
-        args = _particle.slice(1);
-
-    return processFunction(instruction, args);
-  }));
-}
+exports.default = parseParticles;
 
 /***/ }),
 /* 2 */
@@ -716,7 +758,7 @@ var terminal = new _terminal2.default('ter1', controller);
 
 var pluginInterface = {
 
-  VERSION: '2.4.1',
+  VERSION: '2.4.2',
   ECHO_SERVER_URL: 'wss://echo.websocket.org/',
 
   terminal: terminal,
@@ -1634,13 +1676,71 @@ var _utils2 = _interopRequireDefault(_utils);
 
 var _particles = __webpack_require__(1);
 
-var _particles2 = _interopRequireDefault(_particles);
-
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _toArray(arr) { return Array.isArray(arr) ? arr : Array.from(arr); }
 
 function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function joinBuffers(buffersToJoin) {
+  var total = 0;
+  var _iteratorNormalCompletion = true;
+  var _didIteratorError = false;
+  var _iteratorError = undefined;
+
+  try {
+    for (var _iterator = buffersToJoin[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+      var buffer = _step.value;
+
+      total += buffer.length;
+    }
+  } catch (err) {
+    _didIteratorError = true;
+    _iteratorError = err;
+  } finally {
+    try {
+      if (!_iteratorNormalCompletion && _iterator.return) {
+        _iterator.return();
+      }
+    } finally {
+      if (_didIteratorError) {
+        throw _iteratorError;
+      }
+    }
+  }
+
+  var out = new Uint8Array(total);
+  var offset = 0;
+  var _iteratorNormalCompletion2 = true;
+  var _didIteratorError2 = false;
+  var _iteratorError2 = undefined;
+
+  try {
+    for (var _iterator2 = buffersToJoin[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+      var _buffer = _step2.value;
+
+      out.set(_buffer, offset);
+      offset += _buffer.length;
+    }
+  } catch (err) {
+    _didIteratorError2 = true;
+    _iteratorError2 = err;
+  } finally {
+    try {
+      if (!_iteratorNormalCompletion2 && _iterator2.return) {
+        _iterator2.return();
+      }
+    } finally {
+      if (_didIteratorError2) {
+        throw _iteratorError2;
+      }
+    }
+  }
+
+  return out.buffer;
+}
 
 var Binary = function () {
   function Binary(dwst) {
@@ -1764,66 +1864,24 @@ var Binary = function () {
     value: function run(paramString) {
       var _this = this;
 
-      function joinBuffers(buffersToJoin) {
-        var total = 0;
-        var _iteratorNormalCompletion = true;
-        var _didIteratorError = false;
-        var _iteratorError = undefined;
-
-        try {
-          for (var _iterator = buffersToJoin[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-            var buffer = _step.value;
-
-            total += buffer.length;
-          }
-        } catch (err) {
-          _didIteratorError = true;
-          _iteratorError = err;
-        } finally {
-          try {
-            if (!_iteratorNormalCompletion && _iterator.return) {
-              _iterator.return();
-            }
-          } finally {
-            if (_didIteratorError) {
-              throw _iteratorError;
-            }
-          }
+      var parsed = void 0;
+      try {
+        parsed = (0, _particles.parseParticles)(paramString);
+      } catch (e) {
+        if (e instanceof _particles.InvalidParticles) {
+          this._dwst.terminal.mlog(['Syntax error.'], 'error');
+          return;
         }
-
-        var out = new Uint8Array(total);
-        var offset = 0;
-        var _iteratorNormalCompletion2 = true;
-        var _didIteratorError2 = false;
-        var _iteratorError2 = undefined;
-
-        try {
-          for (var _iterator2 = buffersToJoin[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-            var _buffer = _step2.value;
-
-            out.set(_buffer, offset);
-            offset += _buffer.length;
-          }
-        } catch (err) {
-          _didIteratorError2 = true;
-          _iteratorError2 = err;
-        } finally {
-          try {
-            if (!_iteratorNormalCompletion2 && _iterator2.return) {
-              _iterator2.return();
-            }
-          } finally {
-            if (_didIteratorError2) {
-              throw _iteratorError2;
-            }
-          }
-        }
-
-        return out.buffer;
+        throw e;
       }
-      var out = (0, _particles2.default)(paramString, function () {
-        return _this._process.apply(_this, arguments);
-      }, joinBuffers);
+      var processed = parsed.map(function (particle) {
+        var _particle = _toArray(particle),
+            instruction = _particle[0],
+            args = _particle.slice(1);
+
+        return _this._process(instruction, args);
+      });
+      var out = joinBuffers(processed);
 
       var msg = '<' + out.byteLength + 'B of data> ';
       if (this._dwst.connection === null || this._dwst.connection.isClosing() || this._dwst.connection.isClosed()) {
@@ -3280,9 +3338,9 @@ var _utils2 = _interopRequireDefault(_utils);
 
 var _particles = __webpack_require__(1);
 
-var _particles2 = _interopRequireDefault(_particles);
-
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _toArray(arr) { return Array.isArray(arr) ? arr : Array.from(arr); }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -3370,12 +3428,25 @@ var Send = function () {
     value: function run(paramString) {
       var _this = this;
 
-      function joinStrings(strings) {
-        return strings.join('');
+      var parsed = void 0;
+      try {
+        parsed = (0, _particles.parseParticles)(paramString);
+      } catch (e) {
+        if (e instanceof _particles.InvalidParticles) {
+          this._dwst.terminal.mlog(['Syntax error.'], 'error');
+          return;
+        }
+        throw e;
       }
-      var msg = (0, _particles2.default)(paramString, function () {
-        return _this._process.apply(_this, arguments);
-      }, joinStrings);
+      var processed = parsed.map(function (particle) {
+        var _particle = _toArray(particle),
+            instruction = _particle[0],
+            args = _particle.slice(1);
+
+        return _this._process(instruction, args);
+      });
+      var msg = processed.join('');
+
       if (this._dwst.connection === null || this._dwst.connection.isClosing() || this._dwst.connection.isClosed()) {
         var connectTip = ['Use ', {
           type: 'dwstgg',
