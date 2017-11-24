@@ -758,7 +758,7 @@ var terminal = new _terminal2.default('ter1', controller);
 
 var pluginInterface = {
 
-  VERSION: '2.4.3',
+  VERSION: '2.4.4',
   ECHO_SERVER_URL: 'wss://echo.websocket.org/',
 
   terminal: terminal,
@@ -1274,6 +1274,7 @@ var Terminal = function () {
 
     this._elementId = elementId;
     this._controller = controller;
+    this._limit = 1000;
   }
 
   _createClass(Terminal, [{
@@ -1386,6 +1387,9 @@ var Terminal = function () {
       var terminal = document.getElementById(this._elementId);
       var userWasScrolling = this.isUserScrolling();
       terminal.appendChild(logLine);
+      while (terminal.childElementCount > this._limit) {
+        terminal.removeChild(terminal.firstChild);
+      }
       if (userWasScrolling) {
         return;
       }
@@ -2261,15 +2265,31 @@ var FakeSocket = function () {
     this.protocol = '';
     this.readyState = 1;
     this._path = url.split('//').pop();
+    this._nextFlood = null;
     window.setTimeout(function () {
       _this.onopen();
+      if (_this._path === 'flood') {
+        _this._flood(0);
+      }
     }, 0);
   }
 
   _createClass(FakeSocket, [{
+    key: '_flood',
+    value: function _flood(count) {
+      var _this2 = this;
+
+      this._nextFlood = window.setTimeout(function () {
+        _this2.onmessage({
+          data: '' + count
+        });
+        _this2._flood(count + 1);
+      }, 0);
+    }
+  }, {
     key: 'send',
     value: function send(message) {
-      var _this2 = this;
+      var _this3 = this;
 
       if (this._path === 'echo') {
         var data = function () {
@@ -2282,7 +2302,7 @@ var FakeSocket = function () {
           throw new Error('Unexpected message type');
         }();
         window.setTimeout(function () {
-          _this2.onmessage({
+          _this3.onmessage({
             data: data
           });
         }, 0);
@@ -2291,6 +2311,7 @@ var FakeSocket = function () {
   }, {
     key: 'close',
     value: function close() {
+      window.clearTimeout(this._nextFlood);
       this.readyState = 3;
       this.onclose({
         code: 1000,
@@ -2338,14 +2359,14 @@ var Connection = function () {
   }, {
     key: '_onclose',
     value: function _onclose(e) {
-      var _this3 = this;
+      var _this4 = this;
 
       var sessionLength = function () {
-        if (_this3.sessionStartTime === null) {
+        if (_this4.sessionStartTime === null) {
           return null;
         }
         var currentTime = new Date().getTime();
-        return currentTime - _this3.sessionStartTime;
+        return currentTime - _this4.sessionStartTime;
       }();
       this._controller.onConnectionClose(e, sessionLength);
     }
