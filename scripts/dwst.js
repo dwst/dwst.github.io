@@ -758,7 +758,7 @@ var terminal = new _terminal2.default('ter1', controller);
 
 var pluginInterface = {
 
-  VERSION: '2.4.4',
+  VERSION: '2.4.5',
   ECHO_SERVER_URL: 'wss://echo.websocket.org/',
 
   terminal: terminal,
