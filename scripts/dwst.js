@@ -758,7 +758,7 @@ var terminal = new _terminal2.default('ter1', controller);
 
 var pluginInterface = {
 
-  VERSION: '2.4.5',
+  VERSION: '2.4.6',
   ECHO_SERVER_URL: 'wss://echo.websocket.org/',
 
   terminal: terminal,
@@ -2708,8 +2708,8 @@ var Help = function () {
       }]);
     }
   }, {
-    key: '_mainHelp',
-    value: function _mainHelp() {
+    key: '_commandsList',
+    value: function _commandsList() {
       var available = [];
       [].concat(_toConsumableArray(this._dwst.commands.keys())).sort().forEach(function (c) {
         if (c.length > 1) {
@@ -2723,8 +2723,11 @@ var Help = function () {
           available.push(commandSegment);
         }
       });
-
-      var commandsList = [flatList(available)];
+      return [flatList(available)];
+    }
+  }, {
+    key: '_mainHelp',
+    value: function _mainHelp() {
 
       this._dwst.terminal.mlog([this._createBreadCrumbs(), '', {
         type: 'h1',
@@ -2732,7 +2735,11 @@ var Help = function () {
       }, '', 'DWSTGG is here to help you get the most out of Dark WebSocket Terminal', '', {
         type: 'h2',
         text: 'Topics'
-      }, '', ['- Working with ', {
+      }, '', ['- ', {
+        type: 'dwstgg',
+        text: '#introduction',
+        section: '#introduction'
+      }, ' for beginners'], ['- Working with ', {
         type: 'dwstgg',
         text: '#unprotected',
         section: '#unprotected'
@@ -2744,16 +2751,14 @@ var Help = function () {
         type: 'dwstgg',
         text: '#privacy',
         section: '#privacy'
-      }, ' and tracking information'], '', ['Open with ', {
+      }, ' and tracking information'], ['- Alphabetical List of ', {
+        type: 'dwstgg',
+        text: '#commands',
+        section: '#commands'
+      }], '', ['Open with ', {
         type: 'syntax',
         text: '/help #<keyword>'
-      }], '', {
-        type: 'h2',
-        text: 'Commands'
-      }, ''].concat(commandsList).concat([['Type ', {
-        type: 'syntax',
-        text: '/help <command>'
-      }, ' for instructions'], '']), 'system');
+      }], ''], 'system');
     }
   }, {
     key: '_helpPage',
@@ -2866,6 +2871,65 @@ var Help = function () {
           type: 'h1',
           text: 'Privacy and Tracking Information'
         }, '', gaSection, '', disableTracking, '', storageSection, '', futureChanges, ''], 'system');
+        return;
+      }
+      if (page === '#introduction') {
+        this._dwst.terminal.mlog([this._createBreadCrumbs(page), '', {
+          type: 'h1',
+          text: 'Introduction for Beginners'
+        }, '', 'DWST is used to manually interact with a WebSocket server.', '', {
+          type: 'h2',
+          text: 'The Very Basics'
+        }, '', ['Use the ', {
+          type: 'dwstgg',
+          text: 'connect',
+          section: 'connect'
+        }, ' command to establish a connection. ', 'Type in text to send messages. ', 'End the connection with the ', {
+          type: 'dwstgg',
+          text: 'disconnect',
+          section: 'disconnect'
+        }, ' command when you are done.'], '', {
+          type: 'h2',
+          text: 'Convenience Tools'
+        }, '', ['Use the ', {
+          type: 'dwstgg',
+          text: 'send',
+          section: 'send'
+        }, ' and ', {
+          type: 'dwstgg',
+          text: 'binary',
+          section: 'binary'
+        }, ' commands to construct more complex messages. ', 'Setup a periodic send with the ', {
+          type: 'dwstgg',
+          text: 'interval',
+          section: 'interval'
+        }, ' command or send a burst of messages with the ', {
+          type: 'dwstgg',
+          text: 'spam',
+          section: 'spam'
+        }, ' command.'], '', {
+          type: 'h2',
+          text: 'In Case of Emergency'
+        }, '', ['Use the ', {
+          type: 'strong',
+          text: 'escape key'
+        }, ' for an emergency shutdown if you feel that things are spinning out of control. ', '', 'Click on the DWST logo or use the ', {
+          type: 'dwstgg',
+          text: 'splash',
+          section: 'splash'
+        }, ' command if you get lost.'], ''], 'system');
+        return;
+      }
+      if (page === '#commands') {
+        var commandsList = this._commandsList();
+
+        this._dwst.terminal.mlog([this._createBreadCrumbs(page), '', {
+          type: 'h1',
+          text: 'Alphabetical List of Commands'
+        }, ''].concat(commandsList).concat([['Type ', {
+          type: 'syntax',
+          text: '/help <command>'
+        }, ' for usage'], '']), 'system');
         return;
       }
 
