@@ -758,7 +758,7 @@ var terminal = new _terminal2.default('ter1', controller);
 
 var pluginInterface = {
 
-  VERSION: '2.4.6',
+  VERSION: '2.4.7',
   ECHO_SERVER_URL: 'wss://echo.websocket.org/',
 
   terminal: terminal,
@@ -860,7 +860,7 @@ function loud(line) {
 }
 
 function enableDebugger() {
-  document.documentElement.className += ' dwst-debug';
+  document.documentElement.classList.add('dwst-debug--guides');
 }
 
 function showHelpTip() {
@@ -1420,6 +1420,15 @@ var Terminal = function () {
         });
         gfxContent.appendChild(logLine);
       });
+      var background = document.createElement('div');
+      background.setAttribute('class', 'dwst-gfx__background');
+      var safe = document.createElement('div');
+      safe.setAttribute('class', 'dwst-debug__background-guide');
+      var safeco = document.createElement('div');
+      safeco.setAttribute('class', 'dwst-debug__content-guide');
+      safe.appendChild(safeco);
+      background.appendChild(safe);
+      gfxContent.appendChild(background);
 
       var gfxContainer = document.createElement('div');
       gfxContainer.setAttribute('class', 'dwst-log__item dwst-log__item--gfx dwst-gfx');
@@ -1661,18 +1670,6 @@ Object.defineProperty(exports, "__esModule", {
 });
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-/**
-
-  Authors: Toni Ruottu, Finland 2010-2017
-
-  This file is part of Dark WebSocket Terminal.
-
-  CC0 1.0 Universal, http://creativecommons.org/publicdomain/zero/1.0/
-
-  To the extent possible under law, Dark WebSocket Terminal developers have waived all
-  copyright and related or neighboring rights to Dark WebSocket Terminal.
-
-*/
 
 var _utils = __webpack_require__(0);
 
@@ -1687,6 +1684,79 @@ function _toArray(arr) { return Array.isArray(arr) ? arr : Array.from(arr); }
 function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+function _extendableBuiltin(cls) {
+  function ExtendableBuiltin() {
+    var instance = Reflect.construct(cls, Array.from(arguments));
+    Object.setPrototypeOf(instance, Object.getPrototypeOf(this));
+    return instance;
+  }
+
+  ExtendableBuiltin.prototype = Object.create(cls.prototype, {
+    constructor: {
+      value: cls,
+      enumerable: false,
+      writable: true,
+      configurable: true
+    }
+  });
+
+  if (Object.setPrototypeOf) {
+    Object.setPrototypeOf(ExtendableBuiltin, cls);
+  } else {
+    ExtendableBuiltin.__proto__ = cls;
+  }
+
+  return ExtendableBuiltin;
+}
+/**
+
+  Authors: Toni Ruottu, Finland 2010-2017
+
+  This file is part of Dark WebSocket Terminal.
+
+  CC0 1.0 Universal, http://creativecommons.org/publicdomain/zero/1.0/
+
+  To the extent possible under law, Dark WebSocket Terminal developers have waived all
+  copyright and related or neighboring rights to Dark WebSocket Terminal.
+
+*/
+
+var UnknownInstruction = function (_extendableBuiltin2) {
+  _inherits(UnknownInstruction, _extendableBuiltin2);
+
+  function UnknownInstruction(instruction) {
+    _classCallCheck(this, UnknownInstruction);
+
+    var _this = _possibleConstructorReturn(this, (UnknownInstruction.__proto__ || Object.getPrototypeOf(UnknownInstruction)).call(this));
+
+    _this.instruction = instruction;
+    return _this;
+  }
+
+  return UnknownInstruction;
+}(_extendableBuiltin(Error));
+
+function byteValue(x) {
+  var code = x.charCodeAt(0);
+  if (code !== (code & 0xff)) {
+    // eslint-disable-line no-bitwise
+    return 0;
+  }
+  return code;
+}
+
+function hexpairtobyte(hp) {
+  var hex = hp.join('');
+  if (hex.length !== 2) {
+    return null;
+  }
+  return parseInt(hex, 16);
+}
 
 function joinBuffers(buffersToJoin) {
   var total = 0;
@@ -1776,25 +1846,10 @@ var Binary = function () {
   }, {
     key: '_process',
     value: function _process(instr, params) {
-      function byteValue(x) {
-        var code = x.charCodeAt(0);
-        if (code !== (code & 0xff)) {
-          // eslint-disable-line no-bitwise
-          return 0;
-        }
-        return code;
-      }
-      function hexpairtobyte(hp) {
-        var hex = hp.join('');
-        if (hex.length !== 2) {
-          return null;
-        }
-        return parseInt(hex, 16);
-      }
-      var bytes = [];
       if (instr === 'default') {
         var text = params[0];
-        bytes = [].concat(_toConsumableArray(text)).map(byteValue);
+        var bytes = [].concat(_toConsumableArray(text)).map(byteValue);
+        return new Uint8Array(bytes);
       }
       if (instr === 'random') {
         var randombyte = function randombyte() {
@@ -1805,10 +1860,11 @@ var Binary = function () {
         if (params.length === 1) {
           num = _utils2.default.parseNum(params[0]);
         }
-        bytes = [];
+        var _bytes = [];
         for (var i = 0; i < num; i++) {
-          bytes.push(randombyte());
+          _bytes.push(randombyte());
         }
+        return new Uint8Array(_bytes);
       }
       if (instr === 'range') {
         var start = 0;
@@ -1820,10 +1876,11 @@ var Binary = function () {
           start = _utils2.default.parseNum(params[0]);
           end = _utils2.default.parseNum(params[1]);
         }
-        bytes = [];
+        var _bytes2 = [];
         for (var _i = start; _i <= end; _i++) {
-          bytes.push(_i);
+          _bytes2.push(_i);
         }
+        return new Uint8Array(_bytes2);
       }
       if (instr === 'bin') {
         var variable = 'default';
@@ -1842,31 +1899,35 @@ var Binary = function () {
           _variable = params[0];
         }
         var _text = this._dwst.texts.get(_variable);
+        var _bytes3 = void 0;
         if (typeof _text === 'undefined') {
-          bytes = [];
+          _bytes3 = [];
         } else {
-          bytes = [].concat(_toConsumableArray(_text)).map(byteValue);
+          _bytes3 = [].concat(_toConsumableArray(_text)).map(byteValue);
         }
+        return new Uint8Array(_bytes3);
       }
       if (instr === 'hex') {
+        var _bytes4 = void 0;
         if (params.length === 1) {
           var hex = params[0];
           var nums = hex.split('');
           var pairs = _utils2.default.chunkify(nums, 2);
           var tmp = pairs.map(hexpairtobyte);
-          bytes = tmp.filter(function (b) {
+          _bytes4 = tmp.filter(function (b) {
             return b !== null;
           });
         } else {
-          bytes = [];
+          _bytes4 = [];
         }
+        return new Uint8Array(_bytes4);
       }
-      return new Uint8Array(bytes);
+      throw new UnknownInstruction(instr);
     }
   }, {
     key: 'run',
     value: function run(paramString) {
-      var _this = this;
+      var _this2 = this;
 
       var parsed = void 0;
       try {
@@ -1878,13 +1939,30 @@ var Binary = function () {
         }
         throw e;
       }
-      var processed = parsed.map(function (particle) {
-        var _particle = _toArray(particle),
-            instruction = _particle[0],
-            args = _particle.slice(1);
+      var processed = void 0;
+      try {
+        processed = parsed.map(function (particle) {
+          var _particle = _toArray(particle),
+              instruction = _particle[0],
+              args = _particle.slice(1);
 
-        return _this._process(instruction, args);
-      });
+          return _this2._process(instruction, args);
+        });
+      } catch (e) {
+        if (e instanceof UnknownInstruction) {
+          var message = [['No helper ', {
+            type: 'strong',
+            text: e.instruction
+          }, ' available for ', {
+            type: 'dwstgg',
+            text: 'binary',
+            section: 'binary'
+          }, '.']];
+          this._dwst.terminal.mlog(message, 'error');
+          return;
+        }
+        throw e;
+      }
       var out = joinBuffers(processed);
 
       var msg = '<' + out.byteLength + 'B of data> ';
@@ -1974,14 +2052,14 @@ var Bins = function () {
       if (variable !== null) {
         var buffer = this._dwst.bins.get(variable);
         if (typeof buffer !== 'undefined') {
-          this._dwst.blog(buffer, 'system');
+          this._dwst.terminal.blog(buffer, 'system');
           return;
         }
         var listTip = ['List available binaries by typing ', {
           type: 'command',
           text: '/bins'
         }, '.'];
-        this._dwst.mlog(['Binary "' + variable + '" does not exist.', listTip], 'error');
+        this._dwst.terminal.mlog(['Binary "' + variable + '" does not exist.', listTip], 'error');
         return;
       }
       var listing = [].concat(_toConsumableArray(this._dwst.bins.entries())).map(function (_ref) {
@@ -1992,7 +2070,7 @@ var Bins = function () {
         return '"' + name + '": <' + buffer.byteLength + 'B of binary data>';
       });
       var strs = ['Loaded binaries:'].concat(listing);
-      this._dwst.mlog(strs, 'system');
+      this._dwst.terminal.mlog(strs, 'system');
     }
   }, {
     key: 'run',
@@ -2069,7 +2147,7 @@ var Clear = function () {
   }, {
     key: 'run',
     value: function run() {
-      this._dwst.clearLog();
+      this._dwst.terminal.clearLog();
     }
   }]);
 
@@ -2751,7 +2829,7 @@ var Help = function () {
         type: 'dwstgg',
         text: '#privacy',
         section: '#privacy'
-      }, ' and tracking information'], ['- Alphabetical List of ', {
+      }, ' and tracking information'], ['- Alphabetical list of ', {
         type: 'dwstgg',
         text: '#commands',
         section: '#commands'
@@ -3404,6 +3482,47 @@ Object.defineProperty(exports, "__esModule", {
 });
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _utils = __webpack_require__(0);
+
+var _utils2 = _interopRequireDefault(_utils);
+
+var _particles = __webpack_require__(1);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _toArray(arr) { return Array.isArray(arr) ? arr : Array.from(arr); }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+function _extendableBuiltin(cls) {
+  function ExtendableBuiltin() {
+    var instance = Reflect.construct(cls, Array.from(arguments));
+    Object.setPrototypeOf(instance, Object.getPrototypeOf(this));
+    return instance;
+  }
+
+  ExtendableBuiltin.prototype = Object.create(cls.prototype, {
+    constructor: {
+      value: cls,
+      enumerable: false,
+      writable: true,
+      configurable: true
+    }
+  });
+
+  if (Object.setPrototypeOf) {
+    Object.setPrototypeOf(ExtendableBuiltin, cls);
+  } else {
+    ExtendableBuiltin.__proto__ = cls;
+  }
+
+  return ExtendableBuiltin;
+}
 /**
 
   Authors: Toni Ruottu, Finland 2010-2017
@@ -3417,17 +3536,20 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 */
 
-var _utils = __webpack_require__(0);
+var UnknownInstruction = function (_extendableBuiltin2) {
+  _inherits(UnknownInstruction, _extendableBuiltin2);
 
-var _utils2 = _interopRequireDefault(_utils);
+  function UnknownInstruction(instruction) {
+    _classCallCheck(this, UnknownInstruction);
 
-var _particles = __webpack_require__(1);
+    var _this = _possibleConstructorReturn(this, (UnknownInstruction.__proto__ || Object.getPrototypeOf(UnknownInstruction)).call(this));
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+    _this.instruction = instruction;
+    return _this;
+  }
 
-function _toArray(arr) { return Array.isArray(arr) ? arr : Array.from(arr); }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+  return UnknownInstruction;
+}(_extendableBuiltin(Error));
 
 var Send = function () {
   function Send(dwst) {
@@ -3459,13 +3581,12 @@ var Send = function () {
   }, {
     key: '_process',
     value: function _process(instr, params) {
-      var out = void 0;
       if (instr === 'default') {
-        out = params[0];
+        return params[0];
       }
       if (instr === 'random') {
         var randomchar = function randomchar() {
-          out = Math.floor(Math.random() * (0xffff + 1));
+          var out = Math.floor(Math.random() * (0xffff + 1));
           out /= 2; // avoid risky characters
           var char = String.fromCharCode(out);
           return char;
@@ -3478,17 +3599,17 @@ var Send = function () {
         for (var i = 0; i < num; i++) {
           str += randomchar();
         }
-        out = str;
+        return str;
       }
       if (instr === 'text') {
         var variable = 'default';
         if (params.length === 1) {
           variable = params[0];
         }
-        out = this._dwst.texts.get(variable);
+        return this._dwst.texts.get(variable);
       }
       if (instr === 'time') {
-        out = String(Math.round(new Date().getTime() / 1000));
+        return String(Math.round(new Date().getTime() / 1000));
       }
       if (instr === 'range') {
         var start = 32;
@@ -3504,14 +3625,14 @@ var Send = function () {
         for (var _i = start; _i <= end; _i++) {
           _str += String.fromCharCode(_i);
         }
-        out = _str;
+        return _str;
       }
-      return out;
+      throw new UnknownInstruction(instr);
     }
   }, {
     key: 'run',
     value: function run(paramString) {
-      var _this = this;
+      var _this2 = this;
 
       var parsed = void 0;
       try {
@@ -3523,13 +3644,30 @@ var Send = function () {
         }
         throw e;
       }
-      var processed = parsed.map(function (particle) {
-        var _particle = _toArray(particle),
-            instruction = _particle[0],
-            args = _particle.slice(1);
+      var processed = void 0;
+      try {
+        processed = parsed.map(function (particle) {
+          var _particle = _toArray(particle),
+              instruction = _particle[0],
+              args = _particle.slice(1);
 
-        return _this._process(instruction, args);
-      });
+          return _this2._process(instruction, args);
+        });
+      } catch (e) {
+        if (e instanceof UnknownInstruction) {
+          var message = [['No helper ', {
+            type: 'strong',
+            text: e.instruction
+          }, ' available for ', {
+            type: 'dwstgg',
+            text: 'send',
+            section: 'send'
+          }, '.']];
+          this._dwst.terminal.mlog(message, 'error');
+          return;
+        }
+        throw e;
+      }
       var msg = processed.join('');
 
       if (this._dwst.connection === null || this._dwst.connection.isClosing() || this._dwst.connection.isClosed()) {
