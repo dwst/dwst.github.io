@@ -76,7 +76,7 @@ Object.defineProperty(exports, "__esModule", {
 
 /**
 
-  Authors: Toni Ruottu, Finland 2010-2017
+  Authors: Toni Ruottu, Finland 2010-2018
 
   This file is part of Dark WebSocket Terminal.
 
@@ -207,7 +207,7 @@ function _extendableBuiltin(cls) {
 
 /**
 
-  Authors: Toni Ruottu, Finland 2017
+  Authors: Toni Ruottu, Finland 2017-2018
            Lauri Kaitala, Finland 2017
 
   This file is part of Dark WebSocket Terminal.
@@ -539,7 +539,7 @@ exports.default = currenttime;
 
 /**
 
-  Authors: Toni Ruottu, Finland 2010-2017
+  Authors: Toni Ruottu, Finland 2010-2018
 
   This file is part of Dark WebSocket Terminal.
 
@@ -650,7 +650,7 @@ function _toArray(arr) { return Array.isArray(arr) ? arr : Array.from(arr); }
 function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 /**
 
-  Authors: Toni Ruottu, Finland 2010-2017
+  Authors: Toni Ruottu, Finland 2010-2018
            William Orr, US 2012
 
   This file is part of Dark WebSocket Terminal.
@@ -758,7 +758,7 @@ var terminal = new _terminal2.default('ter1', controller);
 
 var pluginInterface = {
 
-  VERSION: '2.4.7',
+  VERSION: '2.4.8',
   ECHO_SERVER_URL: 'wss://echo.websocket.org/',
 
   terminal: terminal,
@@ -999,7 +999,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
 /**
 
-  Authors: Toni Ruottu, Finland 2010-2017
+  Authors: Toni Ruottu, Finland 2010-2018
            William Orr, US 2012
 
   This file is part of Dark WebSocket Terminal.
@@ -1243,7 +1243,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 /**
 
-  Authors: Toni Ruottu, Finland 2010-2017
+  Authors: Toni Ruottu, Finland 2010-2018
 
   This file is part of Dark WebSocket Terminal.
 
@@ -1715,7 +1715,7 @@ function _extendableBuiltin(cls) {
 }
 /**
 
-  Authors: Toni Ruottu, Finland 2010-2017
+  Authors: Toni Ruottu, Finland 2010-2018
 
   This file is part of Dark WebSocket Terminal.
 
@@ -2006,7 +2006,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
 /**
 
-  Authors: Toni Ruottu, Finland 2010-2017
+  Authors: Toni Ruottu, Finland 2010-2018
 
   This file is part of Dark WebSocket Terminal.
 
@@ -2106,7 +2106,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
 /**
 
-  Authors: Toni Ruottu, Finland 2010-2017
+  Authors: Toni Ruottu, Finland 2010-2018
 
   This file is part of Dark WebSocket Terminal.
 
@@ -2170,7 +2170,7 @@ Object.defineProperty(exports, "__esModule", {
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 /**
 
-  Authors: Toni Ruottu, Finland 2010-2017
+  Authors: Toni Ruottu, Finland 2010-2018
 
   This file is part of Dark WebSocket Terminal.
 
@@ -2322,7 +2322,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
 /**
 
-  Authors: Toni Ruottu, Finland 2010-2017
+  Authors: Toni Ruottu, Finland 2010-2018
 
   This file is part of Dark WebSocket Terminal.
 
@@ -2545,7 +2545,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
 /**
 
-  Authors: Toni Ruottu, Finland 2010-2017
+  Authors: Toni Ruottu, Finland 2010-2018
 
   This file is part of Dark WebSocket Terminal.
 
@@ -2619,7 +2619,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
 /**
 
-  Authors: Toni Ruottu, Finland 2010-2017
+  Authors: Toni Ruottu, Finland 2010-2018
 
   This file is part of Dark WebSocket Terminal.
 
@@ -2711,7 +2711,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
 /**
 
-  Authors: Toni Ruottu, Finland 2010-2017
+  Authors: Toni Ruottu, Finland 2010-2018
 
   This file is part of Dark WebSocket Terminal.
 
@@ -2821,11 +2821,7 @@ var Help = function () {
         type: 'dwstgg',
         text: '#unprotected',
         section: '#unprotected'
-      }, ' sockets'], ['- Running the ', {
-        type: 'dwstgg',
-        text: '#development',
-        section: '#development'
-      }, ' server'], ['- ', {
+      }, ' sockets'], ['- ', {
         type: 'dwstgg',
         text: '#privacy',
         section: '#privacy'
@@ -2833,7 +2829,11 @@ var Help = function () {
         type: 'dwstgg',
         text: '#commands',
         section: '#commands'
-      }], '', ['Open with ', {
+      }], ['- ', {
+        type: 'dwstgg',
+        text: '#developing',
+        section: '#developing'
+      }, ' DWST itself'], '', ['Open with ', {
         type: 'syntax',
         text: '/help #<keyword>'
       }], ''], 'system');
@@ -2879,6 +2879,21 @@ var Help = function () {
         }, '', '1. Go to about:config', '2. Search for WebSocket', '3. Set allowInsecureFromHTTPS to true', '']), 'system');
         return;
       }
+      if (page === '#developing') {
+        this._dwst.terminal.mlog([this._createBreadCrumbs(page), '', {
+          type: 'h1',
+          text: 'DWST Development'
+        }, '', ['- Run the ', {
+          type: 'dwstgg',
+          text: '#development',
+          section: '#development'
+        }, ' server'], ['- Explore the user interface ', {
+          type: 'dwstgg',
+          text: '#styleguide',
+          section: '#styleguide'
+        }]], 'system');
+        return;
+      }
       if (page === '#development') {
         var commands = ['git clone https://github.com/dwst/dwst.git', 'cd dwst', 'npm install', 'gulp dev'];
         var commandSegments = commands.map(function (c) {
@@ -2895,6 +2910,17 @@ var Help = function () {
           text: '#unprotected',
           section: '#unprotected'
         }, ' WebSockets.'], '']), 'system');
+        return;
+      }
+      if (page === '#styleguide') {
+        this._dwst.terminal.mlog([this._createBreadCrumbs(page), '', {
+          type: 'h1',
+          text: 'Living Styleguide'
+        }, '', ['DWST is built out of custom built user interface elements which are documented in the ', {
+          type: 'link',
+          text: 'living styleguide',
+          url: '/styleguide'
+        }, '. The styleguide is generated automatically from KSS metadata which is included in related CSS files.']], 'system');
         return;
       }
       if (page === '#unprotected') {
@@ -3103,7 +3129,7 @@ Object.defineProperty(exports, "__esModule", {
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 /**
 
-  Authors: Toni Ruottu, Finland 2010-2017
+  Authors: Toni Ruottu, Finland 2010-2018
 
   This file is part of Dark WebSocket Terminal.
 
@@ -3231,7 +3257,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
 /**
 
-  Authors: Toni Ruottu, Finland 2010-2017
+  Authors: Toni Ruottu, Finland 2010-2018
 
   This file is part of Dark WebSocket Terminal.
 
@@ -3326,7 +3352,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
 /**
 
-  Authors: Toni Ruottu, Finland 2010-2017
+  Authors: Toni Ruottu, Finland 2010-2018
 
   This file is part of Dark WebSocket Terminal.
 
@@ -3420,7 +3446,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
 /**
 
-  Authors: Toni Ruottu, Finland 2010-2017
+  Authors: Toni Ruottu, Finland 2010-2018
 
   This file is part of Dark WebSocket Terminal.
 
@@ -3525,7 +3551,7 @@ function _extendableBuiltin(cls) {
 }
 /**
 
-  Authors: Toni Ruottu, Finland 2010-2017
+  Authors: Toni Ruottu, Finland 2010-2018
 
   This file is part of Dark WebSocket Terminal.
 
@@ -3703,7 +3729,7 @@ Object.defineProperty(exports, "__esModule", {
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 /**
 
-  Authors: Toni Ruottu, Finland 2010-2017
+  Authors: Toni Ruottu, Finland 2010-2018
 
   This file is part of Dark WebSocket Terminal.
 
@@ -3819,7 +3845,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
 /**
 
-  Authors: Toni Ruottu, Finland 2010-2017
+  Authors: Toni Ruottu, Finland 2010-2018
 
   This file is part of Dark WebSocket Terminal.
 
@@ -4029,7 +4055,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
 /**
 
-  Authors: Toni Ruottu, Finland 2010-2017
+  Authors: Toni Ruottu, Finland 2010-2018
 
   This file is part of Dark WebSocket Terminal.
 
