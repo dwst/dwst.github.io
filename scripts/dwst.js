@@ -758,7 +758,7 @@ var terminal = new _terminal2.default('ter1', controller);
 
 var pluginInterface = {
 
-  VERSION: '2.4.8',
+  VERSION: '2.4.9',
   ECHO_SERVER_URL: 'wss://echo.websocket.org/',
 
   terminal: terminal,
@@ -1325,8 +1325,16 @@ var Terminal = function () {
   }, {
     key: 'isUserScrolling',
     value: function isUserScrolling() {
+      var errorMargin = 1;
+      // Some device pixel ratios create problems when errorMargin < 1.
+      // Try to use Windows 10 with 125%, 175% and 225% scaling.
       var screen = document.getElementById('screen1');
-      return screen.scrollTop !== screen.scrollHeight - screen.offsetHeight;
+      var contentHeight = screen.scrollHeight;
+      var visible = screen.offsetHeight;
+      var invisible = contentHeight - visible;
+      var invisibleAbove = screen.scrollTop;
+      var invisibleBelow = invisible - invisibleAbove;
+      return invisibleBelow > errorMargin;
     }
   }, {
     key: 'scrollLog',
