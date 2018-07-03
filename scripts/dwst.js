@@ -247,17 +247,23 @@ function skipSpace(remainder1) {
 function extractEscapedChar(remainder1) {
   var remainder2 = remainder1.slice(1);
   if (remainder2 === '') {
-    var msg = 'syntax error: looks like your last character is an escape. ';
+    var _msg = 'syntax error: looks like your last character is an escape. ';
     // TODO - what if it is the only character?
-    throw new InvalidParticles(msg);
-  }
-  var escapedChar = remainder2.charAt(0);
-  if (specialChars.includes(escapedChar) === false) {
-    var _msg = 'syntax error: don\'t escape normal characters. ';
     throw new InvalidParticles(_msg);
   }
+  var escapedChar = remainder2.charAt(0);
   var remainder = remainder2.slice(1);
-  return [escapedChar, remainder];
+  if (escapedChar === 'n') {
+    return ['\x0a', remainder];
+  }
+  if (escapedChar === 'r') {
+    return ['\x0d', remainder];
+  }
+  if (specialChars.includes(escapedChar)) {
+    return [escapedChar, remainder];
+  }
+  var msg = 'syntax error: don\'t escape normal characters. ';
+  throw new InvalidParticles(msg);
 }
 
 function indexOfAny(inputString, chars) {
@@ -758,7 +764,7 @@ var terminal = new _terminal2.default('ter1', controller);
 
 var pluginInterface = {
 
-  VERSION: '2.4.9',
+  VERSION: '2.4.10',
   ECHO_SERVER_URL: 'wss://echo.websocket.org/',
 
   terminal: terminal,
@@ -1844,7 +1850,7 @@ var Binary = function () {
   }, {
     key: 'examples',
     value: function examples() {
-      return ['/binary Hello world!', '/binary ${random(16)}', '/binary ${text()}', '/binary ${bin()}', '/binary ["JSON","is","cool"]', '/binary ${range(0,0xff)}', '/binary ${hex(1234567890abcdef)}', '/binary ${hex(52)}${random(1)}lol', '/b Available now with ~71.43% less typing!'];
+      return ['/binary Hello world!', '/binary multiline\\r\\nmessage', '/binary ${random(16)}', '/binary ${text()}', '/binary ${bin()}', '/binary ["JSON","is","cool"]', '/binary ${range(0,0xff)}', '/binary ${hex(1234567890abcdef)}', '/binary ${hex(52)}${random(1)}lol', '/b Available now with ~71.43% less typing!'];
     }
   }, {
     key: 'info',
@@ -3605,7 +3611,7 @@ var Send = function () {
   }, {
     key: 'examples',
     value: function examples() {
-      return ['/send Hello world!', '/send rpc(${random(5)})', '/send ${text()}', '/send ["JSON","is","cool"]', '/send ${time()}s since epoch', '/send From a to z: ${range(97,122)}', '/s Available now with 60% less typing!'];
+      return ['/send Hello world!', '/send multiline\\r\\nmessage', '/send rpc(${random(5)})', '/send ${text()}', '/send ["JSON","is","cool"]', '/send ${time()}s since epoch', '/send From a to z: ${range(97,122)}', '/s Available now with 60% less typing!'];
     }
   }, {
     key: 'info',
