@@ -575,77 +575,81 @@ function currenttime() {
 "use strict";
 
 
+var _config = __webpack_require__(4);
+
+var _config2 = _interopRequireDefault(_config);
+
 var _particles = __webpack_require__(1);
 
 var _currenttime = __webpack_require__(2);
 
 var _currenttime2 = _interopRequireDefault(_currenttime);
 
-var _history_manager = __webpack_require__(4);
+var _history_manager = __webpack_require__(5);
 
 var _history_manager2 = _interopRequireDefault(_history_manager);
 
-var _terminal = __webpack_require__(5);
+var _terminal = __webpack_require__(6);
 
 var _terminal2 = _interopRequireDefault(_terminal);
 
-var _binary = __webpack_require__(6);
+var _binary = __webpack_require__(7);
 
 var _binary2 = _interopRequireDefault(_binary);
 
-var _bins = __webpack_require__(7);
+var _bins = __webpack_require__(8);
 
 var _bins2 = _interopRequireDefault(_bins);
 
-var _clear = __webpack_require__(8);
+var _clear = __webpack_require__(9);
 
 var _clear2 = _interopRequireDefault(_clear);
 
-var _connect = __webpack_require__(9);
+var _connect = __webpack_require__(10);
 
 var _connect2 = _interopRequireDefault(_connect);
 
-var _disconnect = __webpack_require__(11);
+var _disconnect = __webpack_require__(12);
 
 var _disconnect2 = _interopRequireDefault(_disconnect);
 
-var _forget = __webpack_require__(12);
+var _forget = __webpack_require__(13);
 
 var _forget2 = _interopRequireDefault(_forget);
 
-var _help = __webpack_require__(13);
+var _help = __webpack_require__(14);
 
 var _help2 = _interopRequireDefault(_help);
 
-var _interval = __webpack_require__(14);
+var _interval = __webpack_require__(15);
 
 var _interval2 = _interopRequireDefault(_interval);
 
-var _loadbin = __webpack_require__(15);
+var _loadbin = __webpack_require__(16);
 
 var _loadbin2 = _interopRequireDefault(_loadbin);
 
-var _loadtext = __webpack_require__(16);
+var _loadtext = __webpack_require__(17);
 
 var _loadtext2 = _interopRequireDefault(_loadtext);
 
-var _reset = __webpack_require__(17);
+var _reset = __webpack_require__(18);
 
 var _reset2 = _interopRequireDefault(_reset);
 
-var _send = __webpack_require__(18);
+var _send = __webpack_require__(19);
 
 var _send2 = _interopRequireDefault(_send);
 
-var _spam = __webpack_require__(19);
+var _spam = __webpack_require__(20);
 
 var _spam2 = _interopRequireDefault(_spam);
 
-var _splash = __webpack_require__(20);
+var _splash = __webpack_require__(21);
 
 var _splash2 = _interopRequireDefault(_splash);
 
-var _texts = __webpack_require__(21);
+var _texts = __webpack_require__(22);
 
 var _texts2 = _interopRequireDefault(_texts);
 
@@ -764,8 +768,8 @@ var terminal = new _terminal2.default('ter1', controller);
 
 var pluginInterface = {
 
-  VERSION: '2.4.10',
-  ECHO_SERVER_URL: 'wss://echo.websocket.org/',
+  VERSION: _config2.default.appVersion,
+  ECHO_SERVER_URL: _config2.default.echoServer,
 
   terminal: terminal,
   controller: controller,
@@ -990,6 +994,21 @@ window.addEventListener('load', function () {
 
 /***/ }),
 /* 4 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = {
+  appVersion: '2.4.11',
+  echoServer: 'wss://echo.websocket.org/'
+};
+
+/***/ }),
+/* 5 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1234,7 +1253,7 @@ var HistoryManager = function () {
 exports.default = HistoryManager;
 
 /***/ }),
-/* 5 */
+/* 6 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1516,7 +1535,8 @@ var Terminal = function () {
                 }
                 return '/help';
               }();
-              link.onclick = function () {
+              link.onclick = function (evt) {
+                evt.preventDefault();
                 _this._controller.onHelpLinkClick(command);
               };
               link.setAttribute('href', '#');
@@ -1535,7 +1555,8 @@ var Terminal = function () {
               var _link = document.createElement('a');
               _link.setAttribute('class', 'dwst-mlog__command-link');
               var _command = rawText;
-              _link.onclick = function () {
+              _link.onclick = function (evt) {
+                evt.preventDefault();
                 _this._controller.onCommandLinkClick(_command);
               };
               _link.setAttribute('href', '#');
@@ -1673,7 +1694,7 @@ var Terminal = function () {
 exports.default = Terminal;
 
 /***/ }),
-/* 6 */
+/* 7 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2000,7 +2021,7 @@ var Binary = function () {
 exports.default = Binary;
 
 /***/ }),
-/* 7 */
+/* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2104,7 +2125,7 @@ var Bins = function () {
 exports.default = Bins;
 
 /***/ }),
-/* 8 */
+/* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2171,7 +2192,7 @@ var Clear = function () {
 exports.default = Clear;
 
 /***/ }),
-/* 9 */
+/* 10 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2199,7 +2220,7 @@ var _utils = __webpack_require__(0);
 
 var _utils2 = _interopRequireDefault(_utils);
 
-var _connection = __webpack_require__(10);
+var _connection = __webpack_require__(11);
 
 var _connection2 = _interopRequireDefault(_connection);
 
@@ -2320,7 +2341,7 @@ var Connect = function () {
 exports.default = Connect;
 
 /***/ }),
-/* 10 */
+/* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2543,7 +2564,7 @@ var Connection = function () {
 exports.default = Connection;
 
 /***/ }),
-/* 11 */
+/* 12 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2615,7 +2636,7 @@ var Disconnect = function () {
 exports.default = Disconnect;
 
 /***/ }),
-/* 12 */
+/* 13 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2707,7 +2728,7 @@ var Forget = function () {
 exports.default = Forget;
 
 /***/ }),
-/* 13 */
+/* 14 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -3130,7 +3151,7 @@ var Help = function () {
 exports.default = Help;
 
 /***/ }),
-/* 14 */
+/* 15 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -3253,7 +3274,7 @@ var Interval = function () {
 exports.default = Interval;
 
 /***/ }),
-/* 15 */
+/* 16 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -3348,7 +3369,7 @@ var Loadbin = function () {
 exports.default = Loadbin;
 
 /***/ }),
-/* 16 */
+/* 17 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -3444,7 +3465,7 @@ var Loadtext = function () {
 exports.default = Loadtext;
 
 /***/ }),
-/* 17 */
+/* 18 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -3511,7 +3532,7 @@ var Reset = function () {
 exports.default = Reset;
 
 /***/ }),
-/* 18 */
+/* 19 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -3730,7 +3751,7 @@ var Send = function () {
 exports.default = Send;
 
 /***/ }),
-/* 19 */
+/* 20 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -3841,7 +3862,7 @@ var Spam = function () {
 exports.default = Spam;
 
 /***/ }),
-/* 20 */
+/* 21 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -4049,7 +4070,7 @@ var Splash = function () {
 exports.default = Splash;
 
 /***/ }),
-/* 21 */
+/* 22 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
