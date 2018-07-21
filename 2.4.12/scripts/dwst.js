@@ -977,8 +977,9 @@ function init() {
     terminal.scrollLog();
   });
   [].concat(_toConsumableArray(document.getElementsByClassName('js-auto-scroll-button'))).forEach(function (asb) {
-    asb.addEventListener('click', function () {
-      return terminal.scrollLog();
+    asb.addEventListener('click', function (evt) {
+      evt.preventDefault();
+      terminal.scrollLog();
     });
   });
   setInterval(function () {
@@ -1003,7 +1004,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.default = {
-  appVersion: '2.4.11',
+  appVersion: '2.4.12',
   echoServer: 'wss://echo.websocket.org/'
 };
 

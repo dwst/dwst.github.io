@@ -2,16 +2,16 @@
 <html lang="en" ng-app="sgApp">
 <head>
   <meta charset="UTF-8">
-  <link rel="icon" href="/2.4.11/styleguide/assets/img/favicon.ico">
+  <link rel="icon" href="/2.4.12/styleguide/assets/img/favicon.ico">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script>
     var _styleguideConfig = {"title":"DWST Style Guide","disableEncapsulation":false,"disableHtml5Mode":true,"sideNav":false};
     (function() {
       'use strict';
       var userStyleFiles = [
-          '/2.4.11/styleguide/styleguide.css',
-          '/2.4.11/styleguide/styleguide_pseudo_styles.css',
-          '/2.4.11/styleguide/styleguide_helper_elements.css'
+          '/2.4.12/styleguide/styleguide.css',
+          '/2.4.12/styleguide/styleguide_pseudo_styles.css',
+          '/2.4.12/styleguide/styleguide_helper_elements.css'
         ],
         head = document.querySelector('head');
 
@@ -31,15 +31,15 @@
         userStyleFiles.forEach(addCssLink);
       }
 
-      addCssLink('/2.4.11/styleguide/styleguide_at_rules.css');
-      addCssLink('/2.4.11/styleguide/styleguide-app.css', {noReload: true});
+      addCssLink('/2.4.12/styleguide/styleguide_at_rules.css');
+      addCssLink('/2.4.12/styleguide/styleguide-app.css', {noReload: true});
     }());
   </script>
   <script type="text/ng-template" id="userStyles.html">
     <style>
-      @import url('/2.4.11/styleguide/styleguide.css');
-      @import url('/2.4.11/styleguide/styleguide_pseudo_styles.css');
-      @import url('/2.4.11/styleguide/styleguide_helper_elements.css');
+      @import url('/2.4.12/styleguide/styleguide.css');
+      @import url('/2.4.12/styleguide/styleguide_pseudo_styles.css');
+      @import url('/2.4.12/styleguide/styleguide_helper_elements.css');
     </style>
   </script>
   <title ng-bind-html="$root.pageTitle | unsafe">DWST Style Guide</title>
@@ -47,13 +47,13 @@
   <script type="text/javascript">
     var filesConfig = [];
   </script>
-  <base href="/2.4.11/styleguide/" />
+  <base href="/2.4.12/styleguide/" />
 </head>
 <body class="sg">
   
   <div class="sg view-index" ui-view></div>
-  <script src="/2.4.11/styleguide/js/vendor.js"></script>
-  <script src="/2.4.11/styleguide/js/app.js"></script>
+  <script src="/2.4.12/styleguide/js/vendor.js"></script>
+  <script src="/2.4.12/styleguide/js/app.js"></script>
   
 </body>
 </html>
