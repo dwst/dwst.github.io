@@ -1,0 +1,54 @@
+
+/**
+
+  Authors: Toni Ruottu, Finland 2010-2018
+
+  This file is part of Dark WebSocket Terminal.
+
+  CC0 1.0 Universal, http://creativecommons.org/publicdomain/zero/1.0/
+
+  To the extent possible under law, Dark WebSocket Terminal developers have waived all
+  copyright and related or neighboring rights to Dark WebSocket Terminal.
+
+*/
+
+/*
+Prompt
+
+Prompts are used by users to execute arbitrary commands.
+
+markup:
+<div class="dwst-base">
+  <div class="dwst-prompt">
+    <div class="dwst-prompt__input">
+      <label for="input-field-id" style="position: absolute; left: -10000px;">command prompt</label>
+      <input class="dwst-text-input" id="input-field-id" type="text" value="example user input">
+    </div>
+    <div class="dwst-prompt__button">
+      <button class="dwst-button dwst-button--send" aria-label="send"></button>
+    </div>
+  </div>
+</div>
+
+Styleguide 2.5
+*/
+
+.dwst-prompt {
+  width: 100%;
+  height: var(--dwst-bar-height);
+  position: relative;
+}
+.dwst-prompt__input {
+  vertical-align: middle;
+  width: calc(100% - var(--dwst-bar-height));
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  left: 0;
+}
+.dwst-prompt__button {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+}

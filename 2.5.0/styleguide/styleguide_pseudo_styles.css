@@ -1,0 +1,33 @@
+.dwst-button--send.pseudo-class-hover {
+  background-image: url(../images/sprite.png);
+  background-position: -100px -34px;
+  background-size: 132px 66px;
+}
+
+.dwst-button--splash.pseudo-class-hover {
+  background-image: url(../images/sprite.png);
+  background-position: -50px 0px;
+  background-size: 132px 66px;
+}
+
+.dwst-button--splash-connected.pseudo-class-hover {
+  background-image: url(../images/sprite.png);
+  background-position: -50px -34px;
+  background-size: 132px 66px;
+}
+
+.dwst-mlog__help-link.pseudo-class-hover {
+  color: var(--dwst-color-yellow--light);
+  text-decoration: none;
+}
+
+.dwst-mlog__help-link--warning.pseudo-class-hover {
+  color: var(--dwst-color-white);
+  font-style: normal;
+  text-decoration: underline;
+}
+
+.dwst-mlog__command-link.pseudo-class-hover {
+  color: var(--dwst-color-cyan--light);
+  text-decoration: none;
+}
