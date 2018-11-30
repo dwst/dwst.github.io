@@ -11,7 +11,7 @@ git clone git@github.com:dwst/dwst.git
 cd dwst
 git checkout master
 git checkout -b version_N_E_W
-# replace O.L.D with N.E.W in dwst/scripts/config.js
+# replace O.L.D with N.E.W in dwst/scripts/model/config.js
 # Do some manual testing to make sure most things are working in the new release
 git commit -a -m "increase version number to N.E.W"
 # Make a pull request and get it merged
