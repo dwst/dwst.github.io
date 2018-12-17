@@ -1,1 +1,1 @@
-2.5.4/scripts/service_worker.js
+2.5.5/scripts/service_worker.js
