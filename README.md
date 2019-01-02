@@ -10,11 +10,8 @@ This repository contains the files of the public web directory for the hosted ve
 git clone git@github.com:dwst/dwst.git
 cd dwst
 git checkout master
-git checkout -b version_N_E_W
-# replace O.L.D with N.E.W in dwst/scripts/model/config.js
-# Do some manual testing to make sure most things are working in the new release
-git commit -a -m "increase version number to N.E.W"
-# Make a pull request and get it merged
+git tag v1.2.3
+git push origin v1.2.3
 ```
 
 
@@ -24,7 +21,7 @@ git commit -a -m "increase version number to N.E.W"
 git clone git@github.com:dwst/dwst.git
 git clone git@github.com:dwst/dwst.github.io.git
 cd dwst
-git checkout master
+git checkout v1.2.3
 gulp clean
 gulp
 cp -R build/* ../dwst.github.io/
@@ -33,7 +30,7 @@ git status
 # Check that a new version is added and no files of an old version are being modified
 # Check that all root file symlinks are updated to point to the new version
 git add .
-git commit -a -m "Deploy N.E.W"
+git commit -a -m "Deploy 1.2.3"
 git push origin master
 # Check that the site got updated and still works
 ```
