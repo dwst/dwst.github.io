@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<!--
+
+  Authors: Toni Ruottu, Finland 2010-2019
+
+  This file is part of Dark WebSocket Terminal.
+
+  CC0 1.0 Universal, http://creativecommons.org/publicdomain/zero/1.0/
+
+  To the extent possible under law, Dark WebSocket Terminal developers have waived all
+  copyright and related or neighboring rights to Dark WebSocket Terminal.
+
+-->
+<html lang="en" class="dwst-debug">
+<head>
+  <meta http-equiv="Content-Security-Policy" content="default-src; img-src 'self' https://www.google-analytics.com; script-src 'self' 'unsafe-inline' https://www.google-analytics.com; style-src 'self' 'unsafe-inline'; manifest-src 'self'; connect-src *;" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#222" />
+  <base href="/2.5.10-17-gde9910a/" />
+  <link rel="manifest" href="manifest.json" />
+  <title>Dark WebSocket Terminal</title>
+  <link rel="preload" href="styles/dwst.css" as="style" />
+  <link rel="preload" href="scripts/dwst.js" as="script" />
+  <link rel="preload" href="images/sprite.png" as="image" />
+  <link rel="stylesheet" type="text/css" href="styles/dwst.css" />
+  <link rel="icon" type="image/x-icon" href="images/favicon.ico" />
+  <link rel="icon" type="image/png" href="images/favicon.png" />
+  <meta name="description" content="Dark WebSocket Terminal provides netcat like functionality for conversing with a WebSocket server." />
+</head>
+<body class="dwst-base dwst-layout">
+  <div class="dwst-layout__background">
+    <div class="dwst-debug__background-guide">
+      <div class="dwst-debug__content-guide"></div>
+    </div>
+  </div>
+  <div id="js-screen" class="dwst-layout__content-area dwst-scroll-area">
+    <div id="js-terminal" class="dwst-scroll-area__content">
+    </div>
+  </div>
+  <div id="js-scroll-notification" class="dwst-layout__notification-area dwst-notification" style="display: none;">
+    <a id="js-auto-scroll-button" href="#" class="dwst-notification__link">scroll to bottom</a>
+  </div>
+  <div class="dwst-layout__control-area">
+    <div class="dwst-bar">
+      <div class="dwst-bar__item">
+        <div id="js-clock" class="dwst-time dwst-time--panel dwst-time--placeholder">00:00:00</div>
+      </div>
+      <div class="dwst-bar__item dwst-bar__item--grow"><div class="dwst-prompt">
+        <div class="dwst-prompt__input">
+          <label for="js-prompt" style="position: absolute; left: -10000px;">command prompt</label>
+          <input id="js-prompt" class="dwst-text-input" type="text" value="" />
+        </div>
+        <div class="dwst-prompt__button">
+          <button id="js-send-button" class="dwst-button dwst-button--send" aria-label="send"></button>
+        </div>
+      </div></div>
+      <div class="dwst-bar__item"><button id="js-menu-button" class="dwst-button dwst-button--splash" aria-label="menu"></button></div>
+    </div>
+  </div>
+  <div id="js-file-input" style="visibility: hidden;">
+    <input type="file" />
+  </div>
+  <script src="scripts/dwst.js" charset="UTF-8"></script>
+  <script>
+    if (self.origin.startsWith('https://dwst.github.io')) {
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+  
+      ga('create', 'UA-103558597-1', 'auto');
+      ga('send', 'pageview');
+    }
+  </script>
+</body>
+</html>
