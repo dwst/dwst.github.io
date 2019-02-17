@@ -1,0 +1,63 @@
+
+/**
+
+  Authors: Toni Ruottu, Finland 2010-2019
+
+  This file is part of Dark WebSocket Terminal.
+
+  CC0 1.0 Universal, http://creativecommons.org/publicdomain/zero/1.0/
+
+  To the extent possible under law, Dark WebSocket Terminal developers have waived all
+  copyright and related or neighboring rights to Dark WebSocket Terminal.
+
+*/
+
+/*
+Log Entry
+
+A single log entry with timestamp direction and content.
+The timestamp is only visible on bigger screens.
+The direction indicator is chopped to a single character on small screen sizes.
+
+markup:
+<div class="dwst-base">
+  <div class="dwst-log-entry">
+    <span class="dwst-log-entry__time dwst-time">10:39<span class="dwst-time__sec">:58</span></span>
+    <span class="dwst-log-entry__direction dwst-direction dwst-direction--system">system:</span>
+    <span class="dwst-log-entry__content dwst-mlog">Connection established.</span>
+  </div>
+</div>
+
+Styleguide 2.11
+*/
+
+.dwst-log-entry {
+  padding: 0 1ch;
+  display: grid;
+  grid-template-columns: 1ch calc(100% - 2ch);
+  grid-column-gap: 1ch;
+}
+/* styleguide:ignore:start */
+@media screen and (min-width: 750px) {
+  .dwst-log-entry {
+    grid-template-columns: 8ch 10ch calc(100% - 8ch - 10ch - 2 * 1ch);
+  }
+}
+/* styleguide:ignore:end */
+.dwst-log-entry__time {
+  vertical-align: top;
+  display: none;
+}
+@media screen and (min-width: 750px) {
+  .dwst-log-entry__time {
+    display: initial;
+  }
+}
+
+.dwst-log-entry__direction {
+  vertical-align: top;
+}
+
+.dwst-log-entry__content {
+  vertical-align: top;
+}
