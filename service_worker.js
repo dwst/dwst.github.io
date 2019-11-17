@@ -1,1 +1,1 @@
-2.6.0/scripts/service_worker.js
+2.6.1/scripts/service_worker.js
